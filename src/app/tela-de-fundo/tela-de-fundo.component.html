@@ -1,0 +1,9 @@
+<div style="height: 100%; width: 100%; background-color: black">
+  <app-walker
+    *ngFor="let walker of walkers"
+    [width]="walker.x"
+    [heigth]="walker.y"
+    [corDaBorda]="walker.corDaBorda"
+    (onClick)="trocarCorDeFundoEFazerAcao(walker, $event)"
+  ></app-walker>
+</div>
