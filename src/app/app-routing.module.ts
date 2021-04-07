@@ -5,6 +5,7 @@ import { TelaDeFundoComponent } from './tela-de-fundo/tela-de-fundo.component';
 
 const routes: Routes = [
   { path: '', redirectTo: 'SimulacaoTeste', pathMatch: 'full' },
+  { path: 'SimulacaoTeste/:numeroDeIndividuos', component: TelaDeFundoComponent },
   { path: 'SimulacaoTeste', component: TelaDeFundoComponent },
   { path: '**', component: SimulacaoNaoEncontradaComponent },
 ];

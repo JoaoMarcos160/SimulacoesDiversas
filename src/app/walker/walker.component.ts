@@ -1,4 +1,5 @@
 import { Component, Input, OnInit, Output, EventEmitter } from '@angular/core';
+import { Walker } from '../classes/Walker';
 
 @Component({
   selector: 'app-walker',
@@ -9,6 +10,7 @@ export class WalkerComponent implements OnInit {
   @Input() width: number = 50;
   @Input() heigth: number = 50;
   @Input() corDaBorda: string = '#000000';
+  @Input() tamanho: number = 50;
 
   @Output() onClick = new EventEmitter<{ cor: string; x: number; y: number }>();
 
@@ -20,8 +22,10 @@ export class WalkerComponent implements OnInit {
     return {
       position: 'absolute',
       'margin-left': this.width + 'px',
-      'margin-top': this.heigth + 'px',
+      bottom: this.heigth + 'px',
       border: '2px solid ' + this.corDaBorda,
+      'background-color': this.corDaBorda,
+      padding: this.tamanho + 'px',
     };
   }
 

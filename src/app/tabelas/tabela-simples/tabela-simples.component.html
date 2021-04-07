@@ -1,0 +1,24 @@
+<div class="div-tabela">
+  <table id="tabela">
+    <thead class="head">
+      <tr>
+        <td>{{ textField }}</td>
+        <td>{{ valueField }}</td>
+      </tr>
+    </thead>
+    <tbody class="body">
+      <tr *ngFor="let item of dados">
+        <td>
+          {{ item[textField] }}
+        </td>
+        <td>{{ item[valueField] }}</td>
+      </tr>
+    </tbody>
+    <tfoot class="foot">
+      <tr>
+        <td>Total:</td>
+        <td>{{ total }}</td>
+      </tr>
+    </tfoot>
+  </table>
+</div>

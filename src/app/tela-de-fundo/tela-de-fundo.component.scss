@@ -1,1 +1,25 @@
+.fundo {
+  position: relative;
+  margin: 5px;
+  background-color: whitesmoke;
+}
 
+.div-tabelas {
+  z-index: 140;
+  position: absolute;
+  height: fit-content;
+  width: fit-content;
+  margin: 5px;
+}
+
+.labels {
+  position: relative;
+  z-index: 150;
+  height: fit-content;
+  width: fit-content;
+  margin: 5px;
+  background-color: #eeeeeecc;
+  border-radius: 3px;
+  padding: 5px;
+  border: 1px solid black;
+}

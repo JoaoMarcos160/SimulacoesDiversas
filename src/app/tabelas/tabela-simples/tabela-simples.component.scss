@@ -1,0 +1,40 @@
+table,
+td,
+tr {
+  border: 1px solid black;
+  border-radius: 5px;
+  padding: 2px;
+}
+
+.div-tabela {
+  z-index: 150;
+  position: relative;
+  height: fit-content;
+  width: fit-content;
+  background-color: #eeeeeecc;
+  margin: 5px;
+  border-radius: 3px;
+  padding: 5px;
+  border: 1px solid black;
+}
+
+#tabela {
+  z-index: 2;
+  position: inherit;
+}
+
+.head {
+  font-size: large;
+  font-weight: bold;
+  text-align: center;
+}
+
+.body {
+  text-align: center;
+}
+
+.foot {
+  color: red;
+  font-weight: bold;
+  text-align: center;
+}

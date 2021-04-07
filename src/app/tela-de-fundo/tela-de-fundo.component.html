@@ -1,9 +1,29 @@
-<div style="height: 100%; width: 100%; background-color: black">
+<div class="fundo ocupar-tudo">
+  <div class="div-tabelas">
+    <div class="tabela-lateral">
+      <app-tabela-simples
+        [dados]="tamanhosWalkers"
+        [textField]="'Tamanho'"
+        [valueField]="'Quantidade'"
+        [total]="totalWalkers"
+      ></app-tabela-simples>
+      <p class="labels">
+        Tempo em segundos: <strong>{{ tempoEmSegundos }}</strong>
+      </p>
+    </div>
+  </div>
   <app-walker
     *ngFor="let walker of walkers"
     [width]="walker.x"
     [heigth]="walker.y"
     [corDaBorda]="walker.corDaBorda"
+    [tamanho]="walker.tamanho"
     (onClick)="trocarCorDeFundoEFazerAcao(walker, $event)"
   ></app-walker>
+  <app-alimento
+    *ngFor="let alimento of alimentos"
+    [tipo]="alimento.tipo"
+    [width]="alimento.x"
+    [heigth]="alimento.y"
+  ></app-alimento>
 </div>
