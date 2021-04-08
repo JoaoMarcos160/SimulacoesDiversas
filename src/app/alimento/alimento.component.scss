@@ -1,9 +1,13 @@
-span {
+div {
   z-index: 1;
   position: absolute;
   padding: 5px;
   border-radius: 50px;
   background-color: yellow;
+  border: "2px solid black";
+  max-width: "5px";
+  max-height: "5px";
+  border-radius: "10px";
 }
 
 .alimento1 {
@@ -17,4 +21,16 @@ span {
 }
 .alimento4 {
   background-color: darkblue;
+}
+.alimento5 {
+  background-color: yellow;
+}
+.alimento6 {
+  background-color: black;
+}
+.alimento7 {
+  background-color: chartreuse;
+}
+.alimento8 {
+  background-color: blueviolet;
 }

@@ -1,3 +1,4 @@
+import { Passo } from '../classes/Passo';
 import { AlimentoTipo } from '../enums/AlimentoTipoEnum';
 import { Direcao } from '../enums/DirecaoEnum';
 
@@ -11,26 +12,133 @@ export function getRandomInt(min: number, max: number) {
 }
 
 export function sortearTipoAlimento(): AlimentoTipo {
-  return getRandomInt(1, 5);
-}
-
-export function sortearDirecao(): Direcao {
   return getRandomInt(1, 9);
 }
 
-export function sortearTamanhoDoPasso(): number {
-  return getRandomInt(0, 21);
+export function sortearDirecao(ultimosPassosDados: Passo[]): Direcao {
+  if (ultimosPassosDados.length > 0) {
+    let ultimo = ultimosPassosDados[ultimosPassosDados.length - 1].direcao;
+    let possiveisDirecoes: Direcao[];
+    switch (ultimo) {
+      case Direcao.Cima:
+        possiveisDirecoes = [
+          Direcao.Esquerda,
+          Direcao.CimaEsquerda,
+          Direcao.Cima,
+          Direcao.CimaDireita,
+          Direcao.Direita,
+        ];
+        break;
+      case Direcao.CimaDireita:
+        possiveisDirecoes = [
+          Direcao.CimaEsquerda,
+          Direcao.Cima,
+          Direcao.CimaDireita,
+          Direcao.Direita,
+          Direcao.BaixoDireita,
+        ];
+        break;
+      case Direcao.Direita:
+        possiveisDirecoes = [
+          Direcao.Cima,
+          Direcao.CimaDireita,
+          Direcao.Direita,
+          Direcao.BaixoDireita,
+          Direcao.Baixo,
+        ];
+        break;
+      case Direcao.BaixoDireita:
+        possiveisDirecoes = [
+          Direcao.CimaDireita,
+          Direcao.Direita,
+          Direcao.BaixoDireita,
+          Direcao.Baixo,
+          Direcao.BaixoEsquerda,
+        ];
+        break;
+      case Direcao.Baixo:
+        possiveisDirecoes = [
+          Direcao.Direita,
+          Direcao.BaixoDireita,
+          Direcao.Baixo,
+          Direcao.BaixoEsquerda,
+          Direcao.Esquerda,
+        ];
+        break;
+      case Direcao.BaixoEsquerda:
+        possiveisDirecoes = [
+          Direcao.BaixoDireita,
+          Direcao.Baixo,
+          Direcao.BaixoEsquerda,
+          Direcao.Esquerda,
+          Direcao.CimaEsquerda,
+        ];
+        break;
+      case Direcao.Esquerda:
+        possiveisDirecoes = [
+          Direcao.Baixo,
+          Direcao.BaixoEsquerda,
+          Direcao.Esquerda,
+          Direcao.CimaEsquerda,
+          Direcao.Cima,
+        ];
+        break;
+      case Direcao.CimaEsquerda:
+        possiveisDirecoes = [
+          Direcao.BaixoEsquerda,
+          Direcao.Esquerda,
+          Direcao.CimaEsquerda,
+          Direcao.Cima,
+          Direcao.CimaDireita,
+        ];
+        break;
+      default:
+        possiveisDirecoes = [1, 2, 3, 4, 5, 6, 7, 8]; //todas as direções
+        break;
+    }
+    return possiveisDirecoes[
+      Math.floor(Math.random() * possiveisDirecoes.length)
+    ];
+  }
+  return getRandomInt(1, 9); //todas as direções também
 }
 
-export function sortearCor(): string {
+export function sortearTamanhoDoPasso(): number {
+  return getRandomInt(1, 11);
+}
+
+export function sortearCorHex(): string {
   let hexadecimais = '0123456789ABCDEF';
   let cor = '#';
   // Pega um número aleatório no array acima
-  for (let i = 0; i < 6; i++) {
+  // aqui está gerando cores no formato "#ABC" (3 valores apenas)
+  for (let i = 0; i < 3; i++) {
     //E concatena à variável cor
     cor += hexadecimais[Math.floor(Math.random() * 16)];
   }
   return cor;
+}
+
+export function sortearCorRGBA(): string {
+  return `rgba(${parseInt((Math.random() * 255).toString())}, ${parseInt(
+    (Math.random() * 255).toString()
+  )}, ${parseInt((Math.random() * 255).toString())}, ${Math.random()})`;
+}
+
+export function sortearCorRGB(): string {
+  return `rgb(${parseInt((Math.random() * 255).toString())}, ${parseInt(
+    (Math.random() * 255).toString()
+  )}, ${parseInt((Math.random() * 255).toString())})`;
+}
+
+export function sortearVelocidade(): number {
+  //quanto menor o valor mais rápido
+  return getRandomInt(20, 1000);
+}
+
+export function sortearForcaDeVontade(): number {
+  //quanto maior o valor mais longe ele estará disposto a ir atrás do alimento
+  return getRandomInt(1, 11);
 }
 
 export function sortearTamanho(): number {

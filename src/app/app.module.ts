@@ -9,6 +9,7 @@ import { WalkerComponent } from './walker/walker.component';
 import { GraficoLinhaComponent } from './graficos/grafico-linha/grafico-linha.component';
 import { TabelaSimplesComponent } from './tabelas/tabela-simples/tabela-simples.component';
 import { AlimentoComponent } from './alimento/alimento.component';
+import { CardWalkerComponent } from './card-walker/card-walker.component';
 
 @NgModule({
   declarations: [
@@ -18,7 +19,8 @@ import { AlimentoComponent } from './alimento/alimento.component';
     WalkerComponent,
     GraficoLinhaComponent,
     TabelaSimplesComponent,
-    AlimentoComponent
+    AlimentoComponent,
+    CardWalkerComponent
   ],
   imports: [
     BrowserModule,

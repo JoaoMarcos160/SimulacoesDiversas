@@ -1,0 +1,59 @@
+<div class="card" [ngStyle]="getStyle()">
+  <table>
+    <thead>
+      <tr>
+        <td colspan="2">Walker</td>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Id</td>
+        <td>{{ walker.id }}</td>
+      </tr>
+      <tr>
+        <td>Cor da Borda</td>
+        <td [ngStyle]="{ 'background-color': walker.corDaBorda }"></td>
+      </tr>
+      <tr>
+        <td>Cor em Hexadecimal</td>
+        <td>{{ walker.corDaBorda }}</td>
+      </tr>
+      <tr>
+        <td>Posição X</td>
+        <td>{{ walker.x }}</td>
+      </tr>
+      <tr>
+        <td>Posição Y</td>
+        <td>{{ walker.y }}</td>
+      </tr>
+      <tr>
+        <td>Força de vontade</td>
+        <td>{{ walker.forcaDeVontade }}</td>
+      </tr>
+      <tr>
+        <td>Velocidade</td>
+        <td>{{ walker.velocidade }}</td>
+      </tr>
+      <tr>
+        <td>Tamanho</td>
+        <td>{{ walker.tamanho }}</td>
+      </tr>
+      <tr>
+        <td>Tamanho do passo</td>
+        <td>{{ walker.tamanhoDoPasso }}</td>
+      </tr>
+      <tr>
+        <td>Qtd alimento comido</td>
+        <td>{{ walker.qtdAlimentoComido }}</td>
+      </tr>
+      <tr>
+        <td>Ciclos</td>
+        <td>{{ walker.numeroDeCiclos }}</td>
+      </tr>
+      <tr>
+        <td>Fome</td>
+        <td>{{ walker.fome }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>

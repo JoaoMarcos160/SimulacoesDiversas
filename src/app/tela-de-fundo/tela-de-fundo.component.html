@@ -1,29 +1,61 @@
 <div class="fundo ocupar-tudo">
   <div class="div-tabelas">
     <div class="tabela-lateral">
+      <p class="labels">
+        Total de indivíduos: <strong>{{ totalWalkers }}</strong>
+      </p>
+      <p class="labels">
+        Tempo em segundos: <strong>{{ tempoEmSegundos }}</strong>
+      </p>
+      <p class="labels">
+        Tamanho da tela no eixo X: <strong>{{ totalEixoX }}</strong>
+      </p>
+      <p class="labels">
+        Tamanho da tela no eixo Y: <strong>{{ totalEixoY }}</strong>
+      </p>
+      <p class="labels">
+        Alimento gerado: <strong>{{ totalAlimentoGerado }}</strong>
+      </p>
+      <p class="labels">
+        Alimento disponível: <strong>{{ alimentos.length }}</strong>
+      </p>
       <app-tabela-simples
         [dados]="tamanhosWalkers"
         [textField]="'Tamanho'"
         [valueField]="'Quantidade'"
         [total]="totalWalkers"
       ></app-tabela-simples>
-      <p class="labels">
-        Tempo em segundos: <strong>{{ tempoEmSegundos }}</strong>
-      </p>
+      <!-- <app-tabela-simples
+        [dados]="walkers"
+        [textField]="'id'"
+        [valueField]="'numeroDeCiclos'"
+        [total]="totalWalkers"
+      ></app-tabela-simples> -->
+      <app-tabela-simples
+        [dados]="walkers"
+        [textField]="'id'"
+        [valueField]="'fome'"
+        [total]="totalWalkers"
+      ></app-tabela-simples>
     </div>
   </div>
   <app-walker
     *ngFor="let walker of walkers"
     [width]="walker.x"
-    [heigth]="walker.y"
+    [height]="walker.y"
     [corDaBorda]="walker.corDaBorda"
     [tamanho]="walker.tamanho"
+    (mouseenter)="atualizarCard(walker)"
     (onClick)="trocarCorDeFundoEFazerAcao(walker, $event)"
   ></app-walker>
+  <app-card-walker
+    *ngIf="dadosCard != null"
+    [walker]="dadosCard"
+  ></app-card-walker>
   <app-alimento
     *ngFor="let alimento of alimentos"
     [tipo]="alimento.tipo"
     [width]="alimento.x"
-    [heigth]="alimento.y"
+    [height]="alimento.y"
   ></app-alimento>
 </div>

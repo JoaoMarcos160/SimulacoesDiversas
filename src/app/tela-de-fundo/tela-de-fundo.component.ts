@@ -2,15 +2,15 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Alimento } from '../classes/Alimento';
 import { Walker } from '../classes/Walker';
-import { AlimentoTipo } from '../enums/AlimentoTipoEnum';
-import { Direcao } from '../enums/DirecaoEnum';
 import { calcularQuantidadeArray, sleep } from '../funcoes/core';
 import {
-  getRandomInt,
   randn_bm,
   sortearTipoAlimento,
-  sortearCor,
   sortearTamanho,
+  sortearTamanhoDoPasso,
+  sortearVelocidade,
+  sortearForcaDeVontade,
+  sortearCorRGB,
 } from '../funcoes/sorteios';
 
 @Component({
@@ -21,15 +21,28 @@ import {
 export class TelaDeFundoComponent implements OnInit {
   constructor(private route: ActivatedRoute) {}
 
-  private numeroDeAlimentosGerados: number = 5;
+  private $alimentosGeradosPorVez: number = this.getParametroRotaNumeroDeIndividuos();
+  private $totalAlimentoGerado: number = 0;
+  private $timeOut: any;
 
-  public get totalWalkers(): number {
-    return this.walkers.length;
-  }
   public walkers: Walker[] = [];
   public tempoEmSegundos: number = 0;
   public tamanhosWalkers: any[] = [];
   public alimentos: Alimento[] = [];
+  public dadosCard: Walker | null = null;
+
+  public get totalWalkers(): number {
+    return this.walkers.length;
+  }
+  public get totalEixoX(): number {
+    return window.innerWidth;
+  }
+  public get totalEixoY(): number {
+    return window.innerHeight;
+  }
+  public get totalAlimentoGerado(): number {
+    return this.$totalAlimentoGerado;
+  }
 
   ngOnInit(): void {
     this.gerarWalkers();
@@ -56,7 +69,7 @@ export class TelaDeFundoComponent implements OnInit {
         return this.route.snapshot.params.numeroDeIndividuos;
       }
     }
-    return 5;
+    return 10;
   }
 
   gerarWalkers() {
@@ -64,32 +77,49 @@ export class TelaDeFundoComponent implements OnInit {
     for (let i = 0; i < this.getParametroRotaNumeroDeIndividuos(); i++) {
       this.walkers.push(
         new Walker(
-          Math.min(
-            randn_bm() * (window.innerWidth / 5) + window.innerWidth / 2,
-            window.innerWidth * 0.95
+          this.walkers.length + 1,
+          parseInt(
+            Math.min(
+              randn_bm() * (this.totalEixoX / 8) + this.totalEixoX / 2,
+              this.totalEixoX * 0.95
+            ).toString()
           ),
-          Math.min(
-            randn_bm() * (window.innerHeight / 5) + window.innerHeight / 2,
-            window.innerHeight * 0.95
+          parseInt(
+            Math.min(
+              randn_bm() * (this.totalEixoY / 8) + this.totalEixoY / 2,
+              this.totalEixoY * 0.95
+            ).toString()
           ),
-          sortearCor(),
+          sortearCorRGB(),
           sortearTamanho(),
-          getRandomInt(20, 1000),
-          getRandomInt(1, 50)
+          sortearVelocidade(),
+          sortearForcaDeVontade(),
+          sortearTamanhoDoPasso()
         )
       );
     }
   }
 
   gerarAlimentos() {
-    for (let i = 0; i < this.numeroDeAlimentosGerados; i++) {
+    for (let i = 0; i < this.$alimentosGeradosPorVez; i++) {
       this.alimentos.push(
         new Alimento(
-          getRandomInt(0, window.innerWidth),
-          getRandomInt(0, window.innerHeight),
+          parseInt(
+            Math.min(
+              randn_bm() * (this.totalEixoX / 8) + this.totalEixoX / 2,
+              this.totalEixoX * 0.95
+            ).toString()
+          ),
+          parseInt(
+            Math.min(
+              randn_bm() * (this.totalEixoY / 8) + this.totalEixoY / 2,
+              this.totalEixoY * 0.95
+            ).toString()
+          ),
           sortearTipoAlimento()
         )
       );
+      this.$totalAlimentoGerado++;
     }
   }
 
@@ -97,6 +127,9 @@ export class TelaDeFundoComponent implements OnInit {
     setInterval(() => {
       this.tempoEmSegundos++;
     }, 1000);
+    setInterval(() => {
+      this.gerarAlimentos();
+    }, 5000);
     this.walkers.forEach((walker) => {
       walker.comecarAndar(this.alimentos);
     });
@@ -134,6 +167,16 @@ export class TelaDeFundoComponent implements OnInit {
       }
       xoff += incremento;
     }
+  }
+
+  atualizarCard(walker: Walker) {
+    this.dadosCard = walker;
+
+    clearTimeout(this.$timeOut);
+
+    this.$timeOut = setTimeout(() => {
+      this.dadosCard = null;
+    }, 5000);
   }
 
   // colocarPassosPraTodos(numeroDePassos: number) {
