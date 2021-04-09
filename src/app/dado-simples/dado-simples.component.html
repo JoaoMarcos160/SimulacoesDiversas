@@ -1,0 +1,15 @@
+<div class="linha">
+  <button
+    *ngIf="expandido"
+    (click)="inverterExpandido()"
+    class="seta-esquerda"
+  ></button>
+  <button
+    *ngIf="!expandido"
+    (click)="inverterExpandido()"
+    class="seta-direita"
+  ></button>
+  <p *ngIf="expandido" class="paragrafo">
+    {{ tituloDado }} <strong>{{ dado }}</strong>
+  </p>
+</div>

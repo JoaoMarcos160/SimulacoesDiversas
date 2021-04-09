@@ -23,4 +23,17 @@ export class CardWalkerComponent implements OnInit {
       padding: '5px',
     };
   }
+
+  public getUltimoPasso(): string {
+    return [
+      'Cima',
+      'Cima Direita',
+      'Direita',
+      'Baixo Direita',
+      'Baixo',
+      'Baixo Esquerda',
+      'Esquerda',
+      'Cima Esquerda',
+    ][this.walker.ultimoPasso.direcao - 1];
+  }
 }

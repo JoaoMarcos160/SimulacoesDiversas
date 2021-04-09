@@ -3,9 +3,13 @@ import { AlimentoTipo } from '../enums/AlimentoTipoEnum';
 import { Direcao } from '../enums/DirecaoEnum';
 
 //Arquivo com as funções que sorteiam coisas
-
+/**
+ *
+ * @param min Número mínimo, é incluído nos possíveis resultados
+ * @param max Número máximo, NÃO é incluído nos possíveis resultados
+ * @returns Retorna um número inteiro, com base no máximo e mínimo
+ */
 export function getRandomInt(min: number, max: number) {
-  //o numero máximo não é incluso, o numero minimo é
   min = Math.ceil(min);
   max = Math.floor(max);
   return Math.floor(Math.random() * (max - min)) + min;
@@ -15,6 +19,11 @@ export function sortearTipoAlimento(): AlimentoTipo {
   return getRandomInt(1, 9);
 }
 
+/**
+ *
+ * @param ultimosPassosDados
+ * @returns Sorteia uma direcao tendo como base os ultimos passos dados
+ */
 export function sortearDirecao(ultimosPassosDados: Passo[]): Direcao {
   if (ultimosPassosDados.length > 0) {
     let ultimo = ultimosPassosDados[ultimosPassosDados.length - 1].direcao;
@@ -96,9 +105,10 @@ export function sortearDirecao(ultimosPassosDados: Passo[]): Direcao {
         possiveisDirecoes = [1, 2, 3, 4, 5, 6, 7, 8]; //todas as direções
         break;
     }
-    return possiveisDirecoes[
-      Math.floor(Math.random() * possiveisDirecoes.length)
-    ];
+    return possiveisDirecoes[getRandomInt(1, 4)]; // dá um movimento mais linear
+    // return possiveisDirecoes[
+    //   Math.trunc(Math.random() * possiveisDirecoes.length)
+    // ];
   }
   return getRandomInt(1, 9); //todas as direções também
 }
@@ -120,15 +130,15 @@ export function sortearCorHex(): string {
 }
 
 export function sortearCorRGBA(): string {
-  return `rgba(${parseInt((Math.random() * 255).toString())}, ${parseInt(
-    (Math.random() * 255).toString()
-  )}, ${parseInt((Math.random() * 255).toString())}, ${Math.random()})`;
+  return `rgba(${Math.trunc(Math.random() * 255)}, ${Math.trunc(
+    Math.random() * 255
+  )}, ${Math.trunc(Math.random() * 255)}, ${Math.random()})`;
 }
 
 export function sortearCorRGB(): string {
-  return `rgb(${parseInt((Math.random() * 255).toString())}, ${parseInt(
-    (Math.random() * 255).toString()
-  )}, ${parseInt((Math.random() * 255).toString())})`;
+  return `rgb(${Math.trunc(Math.random() * 255)}, ${Math.trunc(
+    Math.random() * 255
+  )}, ${Math.trunc(Math.random() * 255)})`;
 }
 
 export function sortearVelocidade(): number {
@@ -138,7 +148,8 @@ export function sortearVelocidade(): number {
 
 export function sortearForcaDeVontade(): number {
   //quanto maior o valor mais longe ele estará disposto a ir atrás do alimento
-  return getRandomInt(1, 11);
+  //esse é o numero de pixels que ele conseguirá saltar para chegar num alimento
+  return getRandomInt(10, 100);
 }
 
 export function sortearTamanho(): number {
@@ -151,7 +162,7 @@ export function sortearTamanho(): number {
     result = variancia * variancia * 2;
   }
   if (result == 0) result = 1;
-  return parseInt(result.toString());
+  return Math.trunc(result);
 }
 
 //retorna numeros distribuidos "gaussianamente" em torno do 0

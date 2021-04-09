@@ -21,12 +21,13 @@ export class WalkerComponent implements OnInit {
   getStyle() {
     return {
       position: 'absolute',
-      'margin-left': this.width + 'px',
-      bottom: this.height + 'px',
-      border: '2px solid ' + this.corDaBorda,
       'background-color': this.corDaBorda,
       padding: this.tamanho + 'px',
+      'margin-left': this.width + 'px',
+      bottom: this.height + 'px',
     };
+    // screenY: this.width,
+    // screenX: this.height,
   }
 
   trocarCor(evento: any) {
@@ -35,7 +36,6 @@ export class WalkerComponent implements OnInit {
       x: evento.x,
       y: evento.y,
     };
-
     this.onClick.emit(obj);
   }
 }

@@ -6,12 +6,19 @@ import { Component, Input, OnInit } from '@angular/core';
   styleUrls: ['./tabela-simples.component.scss'],
 })
 export class TabelaSimplesComponent implements OnInit {
-  @Input() total: number = 0;
+  @Input() titulo: string = '';
   @Input() textField: string = '';
   @Input() valueField: string | number = '';
   @Input() dados: { [key: string]: any }[] = [];
+  @Input() total: number = 0;
+
+  public expandido: boolean = true;
 
   constructor() {}
 
   ngOnInit(): void {}
+
+  inverterExpandido() {
+    this.expandido = !this.expandido;
+  }
 }

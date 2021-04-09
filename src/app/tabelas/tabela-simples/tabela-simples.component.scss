@@ -6,6 +6,15 @@ tr {
   padding: 2px;
 }
 
+label {
+  padding: 5px;
+}
+
+.div-titulo {
+  flex-direction: row;
+  text-align: end;
+}
+
 .div-tabela {
   z-index: 150;
   position: relative;

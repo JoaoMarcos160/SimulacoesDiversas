@@ -37,13 +37,13 @@ export class Walker {
   private $ultimosPassosDados: Passo[] = [];
   private $qtdAlimentoComido: number = 0;
   private $numeroDeCiclos: number = 0;
-  private $fome: number = 100;
+  private $fome: number = 1000;
 
   public corDaBorda: string = 'rgb(0,0,0)';
   public tamanho: number = 0;
   public velocidade: number = 750; //tempo em milisegundos para ele andar, quanto mais alto mais lento
   public forcaDeVontade: number = 1; //numeros de 1 a 10
-  public tamanhoDoPasso: number = 0; //quantos pixels ele anda por vez
+  public tamanhoDoPasso: number = 1; //quantos pixels ele anda por vez
 
   public get id(): number {
     return this.$id;
@@ -66,6 +66,14 @@ export class Walker {
   }
   public get fome(): number {
     return this.$fome;
+  }
+
+  public get ultimoPasso(): Passo {
+    return this.$ultimosPassosDados[0];
+  }
+
+  public get passosArmazenados(): number {
+    return this.$passos.length;
   }
 
   constructor(
@@ -108,39 +116,53 @@ export class Walker {
       '\n'
     );
   }
-
+  /**
+   *
+   * @param alimentos Lista de alimentos disponíveis
+   *
+   * @returns Faz o walker começar a andar colocando ele num loop de setInterval que se repete na sua velocidade
+   */
   comecarAndar(alimentos: Alimento[]) {
     let interval = setInterval(() => {
-      if (this.$passos.length === 0) {
-        let retorno = this.alimentoMaisProximo(alimentos);
-        if (retorno.distancia < this.forcaDeVontade * 8) {
-          this.passosParaUmAlimento(retorno.alimento, retorno.distancia);
-        } else {
-          this.acrescentarPassos(
-            sortearDirecao(this.$ultimosPassosDados),
-            this.tamanhoDoPasso
-          );
-        }
-        if (retorno.distancia < this.forcaDeVontade) {
-          this.comer(retorno.alimento, alimentos);
+      if (this.passosArmazenados === 0) {
+        if (alimentos.length > 0) {
+          let retorno = this.alimentoMaisProximo(alimentos);
+          this.passosParaUmAlimento(retorno.alimento);
+          if (Math.round(retorno.distancia) < this.forcaDeVontade) {
+            this.velocidade = this.velocidade / 2;
+            this.comer(retorno.alimento, alimentos);
+          } else {
+            this.acrescentarPassos(
+              sortearDirecao(this.$ultimosPassosDados),
+              this.tamanhoDoPasso
+            );
+          }
         }
       }
-      this.corDaBorda = misturarCoresRGB(
-        parseFloat((1 / this.velocidade).toFixed(3)),
-        this.corDaBorda,
-        'rgb(255,255,255)'
-      );
+
+      this.$numeroDeCiclos % 10 == 0
+        ? (this.corDaBorda = misturarCoresRGB(
+            parseFloat((1 / this.velocidade).toFixed(3)),
+            this.corDaBorda,
+            'rgb(255,255,255)'
+          ))
+        : null;
       if (this.fome > 0) {
         this.andar();
         this.$fome--;
-        this.$numeroDeCiclos = this.numeroDeCiclos + 1;
       } else {
         this.corDaBorda = 'rgb(255,255,0)';
         clearInterval(interval);
       }
+      this.$numeroDeCiclos++;
     }, this.velocidade);
   }
 
+  /**
+   *
+   * @param passo
+   * Recebe o ultimo passo dado e coloca no fim de this.$ultimosPassosDados
+   */
   private acrescentarUltimoPassoDado(passo: Passo) {
     if (this.$ultimosPassosDados.length > 5) {
       this.$ultimosPassosDados.shift();
@@ -148,132 +170,159 @@ export class Walker {
     this.$ultimosPassosDados.push(passo);
   }
 
+  /**
+   * Executa o primeiro passo que estiver no array this.$passos e joga o passo para this.$ultimosPassosDados
+   */
   private andar() {
-    if (this.$passos.length > 0) {
-      let passo = this.$passos.shift();
-      if (passo) this.acrescentarUltimoPassoDado(passo);
-      switch (passo?.direcao) {
-        case Direcao.Cima:
-          this.irParaCima(passo.tamanhoDoPasso);
-          break;
-        case Direcao.CimaDireita:
-          this.irParaCima(passo.tamanhoDoPasso);
-          this.irParaDireita(passo.tamanhoDoPasso);
-          break;
-        case Direcao.Direita:
-          this.irParaDireita(passo.tamanhoDoPasso);
-          break;
-        case Direcao.BaixoDireita:
-          this.irParaBaixo(passo.tamanhoDoPasso);
-          this.irParaDireita(passo.tamanhoDoPasso);
-          break;
-        case Direcao.Baixo:
-          this.irParaBaixo(passo.tamanhoDoPasso);
-          break;
-        case Direcao.BaixoEsquerda:
-          this.irParaBaixo(passo.tamanhoDoPasso);
-          this.irParaEsquerda(passo.tamanhoDoPasso);
-          break;
-        case Direcao.Esquerda:
-          this.irParaEsquerda(passo.tamanhoDoPasso);
-          break;
-        case Direcao.CimaEsquerda:
-          this.irParaCima(passo.tamanhoDoPasso);
-          this.irParaEsquerda(passo.tamanhoDoPasso);
-          break;
-        default:
-          console.log('Direcao ' + passo?.direcao + ' não mapeada');
-          break;
-      }
+    let passo = this.$passos.shift();
+    if (passo) this.acrescentarUltimoPassoDado(passo);
+    switch (passo?.direcao) {
+      case Direcao.Cima:
+        this.irParaCima(passo.tamanhoDoPasso);
+        break;
+      case Direcao.CimaDireita:
+        this.irParaCima(passo.tamanhoDoPasso);
+        this.irParaDireita(passo.tamanhoDoPasso);
+        break;
+      case Direcao.Direita:
+        this.irParaDireita(passo.tamanhoDoPasso);
+        break;
+      case Direcao.BaixoDireita:
+        this.irParaBaixo(passo.tamanhoDoPasso);
+        this.irParaDireita(passo.tamanhoDoPasso);
+        break;
+      case Direcao.Baixo:
+        this.irParaBaixo(passo.tamanhoDoPasso);
+        break;
+      case Direcao.BaixoEsquerda:
+        this.irParaBaixo(passo.tamanhoDoPasso);
+        this.irParaEsquerda(passo.tamanhoDoPasso);
+        break;
+      case Direcao.Esquerda:
+        this.irParaEsquerda(passo.tamanhoDoPasso);
+        break;
+      case Direcao.CimaEsquerda:
+        this.irParaCima(passo.tamanhoDoPasso);
+        this.irParaEsquerda(passo.tamanhoDoPasso);
+        break;
+      case undefined:
+        break;
+      default:
+        console.log('Direcao ' + passo?.direcao + ' não mapeada');
+        break;
     }
   }
 
+  /**
+   *
+   * @param direcao É a direção que o passo terá
+   * @param tamanhoDoPasso É quantos pixels aquele passo ira mover o walker
+   */
   private acrescentarPassos(direcao: Direcao, tamanhoDoPasso: number) {
     this.$passos.push(new Passo(direcao, tamanhoDoPasso));
   }
 
-  private passosParaUmAlimento(alimento: Alimento, distancia: number) {
-    if (this.x === alimento.x && this.y > alimento.y) {
-      let qtdPassos = Math.floor(distancia / this.tamanhoDoPasso);
+  /**
+   *
+   * @param alimento
+   *
+   * Recebe um alimento e gera um espécie de rota para ele, e coloca os passos em this.$passos
+   */
+  private passosParaUmAlimento(alimento: Alimento): void {
+    let distanciaEixo = 0;
+    let qtdPassos = 0;
+    if (this.x === alimento.x) {
+      qtdPassos = Math.trunc(
+        Math.abs(this.y - alimento.y) / this.tamanhoDoPasso
+      );
+    } else if (this.y === alimento.y) {
+      qtdPassos = Math.trunc(
+        Math.abs(this.x - alimento.x) / this.tamanhoDoPasso
+      );
+    } else if (Math.abs(this.x - alimento.x) > Math.abs(this.y - alimento.y)) {
+      distanciaEixo = Math.abs(this.y - alimento.y);
+    } else {
+      distanciaEixo = Math.abs(this.x - alimento.x);
+      qtdPassos = Math.trunc(distanciaEixo / this.tamanhoDoPasso);
+    }
+    if (this.x === alimento.x && this.y < alimento.y) {
       for (let i = 0; i < qtdPassos; i++) {
         this.acrescentarPassos(Direcao.Cima, this.tamanhoDoPasso);
       }
       return;
     }
-    if (this.x > alimento.x && this.y > alimento.y) {
-      let qtdPassos = parseInt((distancia / this.tamanhoDoPasso).toString());
+    if (this.x < alimento.x && this.y < alimento.y) {
       for (let i = 0; i < qtdPassos; i++) {
         this.acrescentarPassos(Direcao.CimaDireita, this.tamanhoDoPasso);
       }
       return;
     }
     if (this.x < alimento.x && this.y === alimento.y) {
-      let qtdPassos = Math.floor(distancia / this.tamanhoDoPasso);
       for (let i = 0; i < qtdPassos; i++) {
         this.acrescentarPassos(Direcao.Direita, this.tamanhoDoPasso);
       }
       return;
     }
     if (this.x < alimento.x && this.y > alimento.y) {
-      let qtdPassos = parseInt((distancia / this.tamanhoDoPasso).toString());
       for (let i = 0; i < qtdPassos; i++) {
         this.acrescentarPassos(Direcao.BaixoDireita, this.tamanhoDoPasso);
       }
       return;
     }
-    if (this.x === alimento.x && this.y < alimento.y) {
-      let qtdPassos = parseInt((distancia / this.tamanhoDoPasso).toString());
+    if (this.x === alimento.x && this.y > alimento.y) {
       for (let i = 0; i < qtdPassos; i++) {
         this.acrescentarPassos(Direcao.Baixo, this.tamanhoDoPasso);
       }
       return;
     }
-    if (this.x < alimento.x && this.y < alimento.y) {
-      let qtdPassos = parseInt((distancia / this.tamanhoDoPasso).toString());
+    if (this.x > alimento.x && this.y > alimento.y) {
       for (let i = 0; i < qtdPassos; i++) {
         this.acrescentarPassos(Direcao.BaixoEsquerda, this.tamanhoDoPasso);
       }
       return;
     }
     if (this.x > alimento.x && this.y === alimento.y) {
-      let qtdPassos = parseInt((distancia / this.tamanhoDoPasso).toString());
       for (let i = 0; i < qtdPassos; i++) {
         this.acrescentarPassos(Direcao.Esquerda, this.tamanhoDoPasso);
       }
       return;
     }
-    if (this.x < alimento.x && this.y > alimento.y) {
-      let qtdPassos = parseInt((distancia / this.tamanhoDoPasso).toString());
+    if (this.x > alimento.x && this.y < alimento.y) {
       for (let i = 0; i < qtdPassos; i++) {
         this.acrescentarPassos(Direcao.CimaEsquerda, this.tamanhoDoPasso);
       }
       return;
     }
-
-    this.$x = alimento.x;
-    this.$y = alimento.y;
   }
 
   private comer(alimento: Alimento, listaDeAlimentos: Alimento[]): void {
+    this.$x = alimento.x;
+    this.$y = alimento.y;
     listaDeAlimentos.splice(listaDeAlimentos.indexOf(alimento), 1);
     this.$qtdAlimentoComido++;
-    this.$fome += alimento.tipo * 100;
+    this.$fome += Math.round(alimento.tipo * window.innerHeight * 0.1);
   }
 
   private alimentoMaisProximo(
     alimentos: Alimento[]
   ): { alimento: Alimento; distancia: number } {
-    let distancias: { alimento: Alimento; distancia: number }[] = [];
-    alimentos.forEach((element) => {
-      distancias.push({
-        alimento: element,
-        distancia: Math.hypot(element.x - this.x, element.y - this.y),
-      });
-    });
-    distancias = distancias.sort((a, b) =>
-      a.distancia < b.distancia ? -1 : 1
-    );
-    return distancias[0];
+    let alimentoMenorDistancia: { alimento: Alimento; distancia: number };
+    let i = 0;
+    alimentoMenorDistancia = { alimento: alimentos[0], distancia: Infinity };
+    do {
+      let alimentoAtual = {
+        alimento: alimentos[i],
+        distancia: Math.hypot(alimentos[i].x - this.x, alimentos[i].y - this.y),
+      };
+      if (alimentoAtual.distancia < alimentoMenorDistancia.distancia) {
+        alimentoMenorDistancia = alimentoAtual;
+      }
+      if (Math.round(alimentoAtual.distancia) < this.forcaDeVontade) {
+        break;
+      }
+      i++;
+    } while (i < alimentos.length);
+    return alimentoMenorDistancia;
   }
 
   private irParaCima(forca: number) {
@@ -301,5 +350,10 @@ export class Walker {
   //ao usar o andar não há necessidade de retirar o passo, pois ele já retira
   private retirarPasso() {
     this.$passos.shift();
+  }
+
+  //retira todos os passos
+  private limparPassos() {
+    this.$passos = [];
   }
 }

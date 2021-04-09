@@ -1,0 +1,17 @@
+.linha {
+  display: flex;
+  position: relative;
+  height: fit-content;
+  width: fit-content;
+  margin: 5px;
+  background-color: #eeeeeecc;
+  border-radius: 3px;
+  padding: 5px;
+  border: 1px solid black;
+  flex-direction: row;
+}
+
+.paragrafo {
+  padding: 2px;
+  margin: 1px;
+}

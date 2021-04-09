@@ -1,40 +1,56 @@
 <div class="fundo ocupar-tudo">
   <div class="div-tabelas">
-    <div class="tabela-lateral">
-      <p class="labels">
-        Total de indivíduos: <strong>{{ totalWalkers }}</strong>
-      </p>
-      <p class="labels">
-        Tempo em segundos: <strong>{{ tempoEmSegundos }}</strong>
-      </p>
-      <p class="labels">
-        Tamanho da tela no eixo X: <strong>{{ totalEixoX }}</strong>
-      </p>
-      <p class="labels">
-        Tamanho da tela no eixo Y: <strong>{{ totalEixoY }}</strong>
-      </p>
-      <p class="labels">
-        Alimento gerado: <strong>{{ totalAlimentoGerado }}</strong>
-      </p>
-      <p class="labels">
-        Alimento disponível: <strong>{{ alimentos.length }}</strong>
-      </p>
+    <div class="tabela-lateral" *ngIf="mostrarTabelas">
+      <app-dado-simples
+        [tituloDado]="'Total de indivíduos: '"
+        [dado]="totalWalkers"
+      ></app-dado-simples>
+      <app-dado-simples
+        [tituloDado]="'Tempo em segundos: '"
+        [dado]="tempoEmSegundos"
+      ></app-dado-simples>
+      <app-dado-simples
+        [tituloDado]="'Tamanho da tela no eixo X: '"
+        [dado]="totalEixoX"
+      ></app-dado-simples>
+      <app-dado-simples
+        [tituloDado]="'Tamanho da tela no eixo Y: '"
+        [dado]="totalEixoY"
+      ></app-dado-simples>
+      <app-dado-simples
+        [tituloDado]="'Alimento gerado: '"
+        [dado]="totalAlimentoGerado"
+      ></app-dado-simples>
+      <app-dado-simples
+        [tituloDado]="'Alimento disponível: '"
+        [dado]="alimentos.length"
+      ></app-dado-simples>
       <app-tabela-simples
-        [dados]="tamanhosWalkers"
+        [titulo]="'Tamanhos'"
         [textField]="'Tamanho'"
         [valueField]="'Quantidade'"
+        [dados]="tamanhosWalkers"
         [total]="totalWalkers"
       ></app-tabela-simples>
-      <!-- <app-tabela-simples
-        [dados]="walkers"
+      <app-tabela-simples
+        [titulo]="'Ciclos'"
         [textField]="'id'"
         [valueField]="'numeroDeCiclos'"
-        [total]="totalWalkers"
-      ></app-tabela-simples> -->
-      <app-tabela-simples
         [dados]="walkers"
+        [total]="totalWalkers"
+      ></app-tabela-simples>
+      <app-tabela-simples
+        [titulo]="'Fome'"
         [textField]="'id'"
         [valueField]="'fome'"
+        [dados]="walkers"
+        [total]="totalWalkers"
+      ></app-tabela-simples>
+      <app-tabela-simples
+        [titulo]="'Força de vontade'"
+        [textField]="'id'"
+        [valueField]="'forcaDeVontade'"
+        [dados]="walkers"
         [total]="totalWalkers"
       ></app-tabela-simples>
     </div>

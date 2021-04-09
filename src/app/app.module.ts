@@ -10,6 +10,7 @@ import { GraficoLinhaComponent } from './graficos/grafico-linha/grafico-linha.co
 import { TabelaSimplesComponent } from './tabelas/tabela-simples/tabela-simples.component';
 import { AlimentoComponent } from './alimento/alimento.component';
 import { CardWalkerComponent } from './card-walker/card-walker.component';
+import { DadoSimplesComponent } from './dado-simples/dado-simples.component';
 
 @NgModule({
   declarations: [
@@ -20,7 +21,8 @@ import { CardWalkerComponent } from './card-walker/card-walker.component';
     GraficoLinhaComponent,
     TabelaSimplesComponent,
     AlimentoComponent,
-    CardWalkerComponent
+    CardWalkerComponent,
+    DadoSimplesComponent
   ],
   imports: [
     BrowserModule,

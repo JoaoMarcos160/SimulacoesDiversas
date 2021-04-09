@@ -1,5 +1,18 @@
 <div class="div-tabela">
-  <table id="tabela">
+  <div class="div-titulo">
+    <label>{{ titulo }}</label>
+    <button
+      *ngIf="expandido"
+      (click)="inverterExpandido()"
+      class="seta-cima"
+    ></button>
+    <button
+      *ngIf="!expandido"
+      (click)="inverterExpandido()"
+      class="seta-baixo"
+    ></button>
+  </div>
+  <table id="tabela" *ngIf="expandido">
     <thead class="head">
       <tr>
         <td>{{ textField }}</td>
