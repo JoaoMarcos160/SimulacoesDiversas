@@ -129,8 +129,10 @@ export class Walker {
           let retorno = this.alimentoMaisProximo(alimentos);
           this.passosParaUmAlimento(retorno.alimento);
           if (Math.round(retorno.distancia) < this.forcaDeVontade) {
-            this.velocidade = this.velocidade / 2;
+            let velocidadeAntiga = this.velocidade;
+            this.velocidade = velocidadeAntiga / 2;
             this.comer(retorno.alimento, alimentos);
+            this.velocidade = velocidadeAntiga;
           } else {
             this.acrescentarPassos(
               sortearDirecao(this.$ultimosPassosDados),
