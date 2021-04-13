@@ -1,4 +1,4 @@
-<div class="fundo ocupar-tudo">
+<div class="fundo ocupar-tudo" (click)="fecharCard()">
   <div class="div-tabelas">
     <div class="tabela-lateral" *ngIf="mostrarTabelas">
       <app-dado-simples
@@ -32,6 +32,14 @@
         [dados]="tamanhosWalkers"
         [total]="totalWalkers"
       ></app-tabela-simples>
+
+      <app-tabela-simples
+        [titulo]="'Longevidade'"
+        [textField]="'id'"
+        [valueField]="'longevidade'"
+        [dados]="walkers"
+        [total]="totalWalkers"
+      ></app-tabela-simples>
       <app-tabela-simples
         [titulo]="'Ciclos'"
         [textField]="'id'"
@@ -40,9 +48,9 @@
         [total]="totalWalkers"
       ></app-tabela-simples>
       <app-tabela-simples
-        [titulo]="'Fome'"
+        [titulo]="'Alimentação'"
         [textField]="'id'"
-        [valueField]="'fome'"
+        [valueField]="'alimentacao'"
         [dados]="walkers"
         [total]="totalWalkers"
       ></app-tabela-simples>
@@ -53,14 +61,32 @@
         [dados]="walkers"
         [total]="totalWalkers"
       ></app-tabela-simples>
+      <app-tabela-simples
+        [titulo]="'Sexos'"
+        [textField]="'Sexo'"
+        [valueField]="'Quantidade'"
+        [dados]="sexos"
+        [total]="totalWalkers"
+      ></app-tabela-simples>
+      <app-tabela-simples
+        [titulo]="'Reprodução'"
+        [textField]="'id'"
+        [valueField]="'vontadeDeReproducao'"
+        [dados]="walkers"
+        [total]="totalWalkers"
+      ></app-tabela-simples>
+      <app-tabela-simples
+        [titulo]="'Causa da morte'"
+        [textField]="'Causa da Morte'"
+        [valueField]="'Quantidade'"
+        [dados]="causaDaMortePorQuantidade"
+        [total]="totalWalkers"
+      ></app-tabela-simples>
     </div>
   </div>
   <app-walker
     *ngFor="let walker of walkers"
-    [width]="walker.x"
-    [height]="walker.y"
-    [corDaBorda]="walker.corDaBorda"
-    [tamanho]="walker.tamanho"
+    [walker]="walker"
     (mouseenter)="atualizarCard(walker)"
     (onClick)="trocarCorDeFundoEFazerAcao(walker, $event)"
   ></app-walker>

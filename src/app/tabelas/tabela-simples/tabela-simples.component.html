@@ -15,8 +15,12 @@
   <table id="tabela" *ngIf="expandido">
     <thead class="head">
       <tr>
-        <td>{{ textField }}</td>
-        <td>{{ valueField }}</td>
+        <td (click)="organizarPorTextField()">
+          <button>{{ textField }}</button>
+        </td>
+        <td (click)="organizarPorValueField()">
+          <button>{{ valueField }}</button>
+        </td>
       </tr>
     </thead>
     <tbody class="body">

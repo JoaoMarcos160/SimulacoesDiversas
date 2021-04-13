@@ -7,27 +7,39 @@ import { Walker } from '../classes/Walker';
   styleUrls: ['./walker.component.scss'],
 })
 export class WalkerComponent implements OnInit {
-  @Input() width: number = 50;
-  @Input() height: number = 50;
-  @Input() corDaBorda: string = '#000000';
-  @Input() tamanho: number = 50;
+  @Input() walker: Walker = <Walker>{};
+  @Input() mostraNome: boolean = true;
 
   @Output() onClick = new EventEmitter<{ cor: string; x: number; y: number }>();
 
+  private distanciaId = this.walker.tamanho / 2;
   constructor() {}
 
   ngOnInit(): void {}
 
   getStyle() {
+    //mostra bordas pretas se morreu ou bordas vermelhas se estiver pronto para se reproduzir
     return {
       position: 'absolute',
-      'background-color': this.corDaBorda,
-      padding: this.tamanho + 'px',
-      'margin-left': this.width + 'px',
-      bottom: this.height + 'px',
+      'background-color': this.walker.corDaBorda,
+      padding: this.walker.tamanho + 'px',
+      'margin-left': this.walker.x + 'px',
+      bottom: this.walker.y + 'px',
+      border:
+        this.walker.causaDaMorte !== 'Ainda vivo'
+          ? '3px solid black'
+          : this.walker.prontoParaReproduzir
+          ? '2px solid red'
+          : '',
     };
-    // screenY: this.width,
-    // screenX: this.height,
+  }
+
+  getStyleId() {
+    return {
+      position: 'absolute',
+      bottom: this.walker.y + this.walker.tamanho * 2 + 'px',
+      'margin-left': (this.walker.x + this.walker.tamanho).toString() + 'px',
+    };
   }
 
   trocarCor(evento: any) {

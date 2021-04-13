@@ -15,7 +15,7 @@
         <td [ngStyle]="{ 'background-color': walker.corDaBorda }"></td>
       </tr>
       <tr>
-        <td>Cor em Hexadecimal</td>
+        <td>Cor</td>
         <td>{{ walker.corDaBorda }}</td>
       </tr>
       <tr>
@@ -51,8 +51,8 @@
         <td>{{ walker.numeroDeCiclos }}</td>
       </tr>
       <tr>
-        <td>Fome</td>
-        <td>{{ walker.fome }}</td>
+        <td>Alimentação</td>
+        <td>{{ walker.alimentacao }}</td>
       </tr>
       <tr>
         <td>Passos armazenados</td>
@@ -61,6 +61,30 @@
       <tr>
         <td>Ultimo Passo</td>
         <td>{{ getUltimoPasso() }}</td>
+      </tr>
+      <tr>
+        <td>Sexo</td>
+        <td>{{ walker.sexo ? "Macho" : "Fêmea" }}</td>
+      </tr>
+      <tr>
+        <td>Velocidade de reprodução</td>
+        <td>{{ walker.velocidadeReproducao }}</td>
+      </tr>
+      <tr>
+        <td>Vontade de reproduzir</td>
+        <td>{{ walker.vontadeDeReproducao }}</td>
+      </tr>
+      <tr>
+        <td>Longevidade</td>
+        <td>{{ walker.longevidade }}</td>
+      </tr>
+      <tr>
+        <td>Causa da Morte</td>
+        <td>{{ walker.causaDaMorte }}</td>
+      </tr>
+      <tr>
+        <td>Status</td>
+        <td>{{ walker.status }}</td>
       </tr>
     </tbody>
   </table>

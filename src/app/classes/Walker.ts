@@ -1,6 +1,8 @@
+import { CausaDaMorte } from '../enums/CausaDaMorteEnum';
 import { Direcao } from '../enums/DirecaoEnum';
+import { StatusWalker } from '../enums/StatusWalker';
 import { misturarCoresRGB } from '../funcoes/core';
-import { sortearDirecao } from '../funcoes/sorteios';
+import { getRandomInt, sortearDirecao, sortearSexo } from '../funcoes/sorteios';
 import { Alimento } from './Alimento';
 import { Passo } from './Passo';
 
@@ -30,51 +32,157 @@ import { Passo } from './Passo';
  */
 
 export class Walker {
-  private $id: number = 0;
-  private $x: number = 0;
-  private $y: number = 0;
-  private $passos: Passo[] = [];
-  private $ultimosPassosDados: Passo[] = [];
-  private $qtdAlimentoComido: number = 0;
-  private $numeroDeCiclos: number = 0;
-  private $fome: number = 1000;
+  private _id: number = 0;
+  private _x: number = 0;
+  private _y: number = 0;
+  private _passos: Passo[] = [];
+  private _ultimosPassosDados: Passo[] = [];
+  private _qtdAlimentoComido: number = 0;
+  private _numeroDeCiclos: number = 0;
+  private _alimentacao: number = 1000;
+  private _sexo: boolean = true;
+  private _velocidadeReproducao: number = 0;
+  private _vontadeDeReproducao: number = 0;
+  private _longevidade: number = 0;
+  private _causaDaMorte: CausaDaMorte | null = null;
+  private _alimentoSendoBuscado: Alimento | null = null;
+  private _parceiroSendoBuscado: Walker | null = null;
+  private _status: StatusWalker = StatusWalker.ProcurandoComida;
 
+  /**
+   * Cor do padding do walker
+   */
   public corDaBorda: string = 'rgb(0,0,0)';
+  /**
+   * Quantos pixels terá o padding do walker
+   */
   public tamanho: number = 0;
-  public velocidade: number = 750; //tempo em milisegundos para ele andar, quanto mais alto mais lento
-  public forcaDeVontade: number = 1; //numeros de 1 a 10
-  public tamanhoDoPasso: number = 1; //quantos pixels ele anda por vez
+  /**
+   * Tempo em milisegundos para ele andar, quanto mais alto mais lento
+   */
+  public velocidade: number = 750;
 
+  /**
+   *  Numeros de pixels que ele estará disposto para pular em um alimento
+   */
+  public forcaDeVontade: number = 1;
+  /**
+   * Quantos pixels ele anda por vez
+   * */
+  public tamanhoDoPasso: number = 1;
+
+  //Getters
+  /**
+   * Id de um walker
+   */
   public get id(): number {
-    return this.$id;
+    return this._id;
   }
 
+  /**
+   * Coordenada X que o walker está
+   */
   public get x(): number {
-    return this.$x;
+    return this._x;
   }
-
+  /**
+   * Coordenada Y que o walker está
+   */
   public get y(): number {
-    return this.$y;
+    return this._y;
   }
 
+  /**
+   * Coordenada x que o walker está
+   */
   public get qtdAlimentoComido(): number {
-    return this.$qtdAlimentoComido;
+    return this._qtdAlimentoComido;
   }
 
+  /**
+   * Número de ciclos que o walker já completou, equivale a idade dele
+   */
   public get numeroDeCiclos(): number {
-    return this.$numeroDeCiclos;
-  }
-  public get fome(): number {
-    return this.$fome;
+    return this._numeroDeCiclos;
   }
 
+  /**
+   * Nível de alimentação que o walker se encontra, o walker começa com nível 1000, e vai abaixando 1 a cada passo que ele dá
+   */
+  public get alimentacao(): number {
+    return this._alimentacao;
+  }
+
+  /**
+   * Ultimo passo dado pelo walker
+   */
   public get ultimoPasso(): Passo {
-    return this.$ultimosPassosDados[0];
+    return this._ultimosPassosDados[this._ultimosPassosDados.length - 1];
   }
 
+  /**
+   * Quantidade de passos que o walker ainda tem armazenado para andar para alguma posição
+   */
   public get passosArmazenados(): number {
-    return this.$passos.length;
+    return this._passos.length;
   }
+
+  /**
+   * Sexo do walker, podendo ser True para Macho e False para Fêmea
+   */
+  public get sexo(): boolean {
+    return this._sexo;
+  }
+
+  /**
+   * Nível de vontade que o walker está de se reproduzir
+   */
+  public get vontadeDeReproducao(): number {
+    return this._vontadeDeReproducao;
+  }
+
+  /**
+   * Indica se o walker está pronto para reprodução
+   */
+  public get prontoParaReproduzir(): boolean {
+    return this.vontadeDeReproducao >= 1000 && this.alimentacao > 1000;
+  }
+
+  /**
+   * De quanto em quantos ciclos sua vontade de se reproduzir aumentará, quanto mais alto o numero mais lentamente
+   */
+  public get velocidadeReproducao(): number {
+    return this._velocidadeReproducao;
+  }
+
+  /**
+   * Guarda qual foi a causa da morte do walker
+   */
+  public get causaDaMorte(): string {
+    if (this._causaDaMorte == null) {
+      return 'Ainda vivo';
+    }
+    return ['Velhice', 'Fome'][this._causaDaMorte];
+  }
+
+  /**
+   * Número de ciclos para a morte do walker, mais longevidade siginifica uma mais ciclos até a morte
+   */
+  public get longevidade(): number {
+    return this._longevidade;
+  }
+  /**
+   * O que o walker está fazendo no momento
+   */
+  public get status(): string {
+    return [
+      'Procurando comida',
+      'Indo até o alimento',
+      'Indo até o parceiro',
+      'Morto',
+    ][this._status];
+  }
+  //Fim dos Getters
 
   constructor(
     id: number,
@@ -84,79 +192,168 @@ export class Walker {
     tamanho: number,
     velocidade: number,
     forcaDeVontade: number,
-    tamanhoDoPasso: number
+    tamanhoDoPasso: number,
+    sexo: boolean,
+    velocidadeDeReproducao: number,
+    longevidade: number
   ) {
-    this.$id = id;
-    this.$x = Math.max(width, 0);
-    this.$y = Math.max(height, 0);
+    this._id = id;
+    this._x = Math.max(width, 0);
+    this._y = Math.max(height, 0);
     this.corDaBorda = corDaBorda;
     this.tamanho = tamanho;
-    this.velocidade = velocidade / 5;
+    this.velocidade = velocidade;
     this.forcaDeVontade = forcaDeVontade;
-    this.tamanhoDoPasso = 1;
-    // this.tamanhoDoPasso = tamanhoDoPasso;
+    this.tamanhoDoPasso = tamanhoDoPasso;
+    this._sexo = sexo;
+    this._velocidadeReproducao = velocidadeDeReproducao;
+    this._longevidade = longevidade;
   }
 
-  toString(): string {
-    return (
-      'Walker ' +
-      this.id +
-      '\n' +
-      'Cor da borda: ' +
-      this.corDaBorda +
-      '\n' +
-      'Força de vontade: ' +
-      this.forcaDeVontade +
-      '\n' +
-      'Tamanho: ' +
-      this.tamanho +
-      '\n' +
-      'Velocidade: ' +
-      this.velocidade +
-      '\n'
-    );
-  }
   /**
    *
    * @param alimentos Lista de alimentos disponíveis
    *
    * @returns Faz o walker começar a andar colocando ele num loop de setInterval que se repete na sua velocidade
    */
-  comecarAndar(alimentos: Alimento[]) {
+  comecarAndar(alimentos: Alimento[], walkers: Walker[]) {
     let interval = setInterval(() => {
       if (this.passosArmazenados === 0) {
-        if (alimentos.length > 0) {
-          let retorno = this.alimentoMaisProximo(alimentos);
-          this.passosParaUmAlimento(retorno.alimento);
-          if (Math.round(retorno.distancia) < this.forcaDeVontade) {
-            let velocidadeAntiga = this.velocidade;
-            this.velocidade = velocidadeAntiga / 2;
-            this.comer(retorno.alimento, alimentos);
-            this.velocidade = velocidadeAntiga;
+        if (this.prontoParaReproduzir) {
+          //fêmeas ficam paradas
+          if (!this.sexo) {
+            this.acrescentarPassos(Direcao.Cima, 0);
+            this._status = StatusWalker.IndoAteParceiro;
           } else {
+            let retornoWalker = this.encontrarParceiroMaisProximo(walkers);
+            if (retornoWalker) {
+              if (
+                Math.round(retornoWalker.distancia) <
+                this.forcaDeVontade * 8
+              ) {
+                this._x = retornoWalker.walker.x;
+                this._y = retornoWalker.walker.y;
+                //acasalamento aqui
+                this.acasalar(walkers, alimentos);
+                let flag = true;
+                for (let i = 0; i < 20; i++) {
+                  if (flag) {
+                    flag = !flag;
+                    this.acrescentarPassos(Direcao.Direita, 20);
+                  } else {
+                    this.acrescentarPassos(Direcao.Esquerda, 20);
+                    flag = !flag;
+                  }
+                }
+                //perde alimentação ao se reproduzir
+                this._alimentacao -= Math.round(
+                  Math.max(window.innerHeight, window.innerWidth) * 0.1
+                );
+                console.log(this.id + ' acasalei');
+                this._vontadeDeReproducao = 0;
+              }
+              this._parceiroSendoBuscado = retornoWalker.walker;
+              console.log(
+                this.id +
+                  ' encontrou como parceiro a ' +
+                  retornoWalker.walker.id
+              );
+
+              this.passosParaUmaCoordenada({
+                x: retornoWalker.walker.x,
+                y: retornoWalker.walker.y,
+              });
+              this._status = StatusWalker.IndoAteParceiro;
+            } else {
+              //caso não encontre nenhum parceiro
+              this.acrescentarPassos(
+                sortearDirecao(this._ultimosPassosDados),
+                this.tamanhoDoPasso
+              );
+              this._status = StatusWalker.ProcurandoComida;
+            }
+          }
+        } else if (alimentos.length > 0) {
+          let retornoAlimento = this.alimentoMaisProximo(alimentos);
+          //se o alimento estiver muito perto ele já pula no alimento e come
+          if (Math.round(retornoAlimento.distancia) < this.forcaDeVontade / 2) {
+            //ele pula até o alimento
+            this.comer(retornoAlimento.alimento, alimentos);
+          }
+          //isso aqui faz eles não irem atrás de alimentos muito longe
+          if (retornoAlimento.distancia < this.forcaDeVontade * 8) {
+            this._alimentoSendoBuscado = retornoAlimento.alimento;
+            this.passosParaUmaCoordenada({
+              x: retornoAlimento.alimento.x,
+              y: retornoAlimento.alimento.y,
+            });
+            this._status = StatusWalker.IndoAteAlimento;
+          } else {
+            //caso o alimento encontrado mais próximo ainda esteja muito longe pra força de vontade dele ele anda aleatoriamente
             this.acrescentarPassos(
-              sortearDirecao(this.$ultimosPassosDados),
+              sortearDirecao(this._ultimosPassosDados),
               this.tamanhoDoPasso
             );
+            this._status = StatusWalker.ProcurandoComida;
           }
+        } else {
+          //caso eles não estejam prontos pra reproduzir e nem tem aliemntos disponíveis eles andam aleatoriamente
+          this.acrescentarPassos(
+            sortearDirecao(this._ultimosPassosDados),
+            this.tamanhoDoPasso
+          );
+          this._status = StatusWalker.ProcurandoComida;
+        }
+      } else {
+        //valida se o alimento que eles estão indo atrás ainda existe, ou seja, nenhum outro cmeu antes deles
+        //isso tambpem faz que eles não fiquem indo em coordenadas que os alimentos nem existem mais
+        if (
+          this._status === StatusWalker.IndoAteAlimento &&
+          !this.alimentoBuscadoAindaExiste(alimentos)
+        ) {
+          this.limparPassos();
+          this._status = StatusWalker.ProcurandoComida;
+        }
+        if (
+          this._status === StatusWalker.IndoAteParceiro &&
+          !this.parceiroBuscadoAindaExiste(walkers)
+        ) {
+          this.limparPassos();
+          this._status = StatusWalker.ProcurandoComida;
         }
       }
 
-      this.$numeroDeCiclos % 10 == 0
-        ? (this.corDaBorda = misturarCoresRGB(
-            parseFloat((1 / this.velocidade).toFixed(3)),
-            this.corDaBorda,
-            'rgb(255,255,255)'
-          ))
-        : null;
-      if (this.fome > 0) {
-        this.andar();
-        this.$fome--;
-      } else {
+      if (this._numeroDeCiclos % 10 === 0) {
+        this.corDaBorda = misturarCoresRGB(
+          parseFloat((1 / this.velocidade).toFixed(3)),
+          this.corDaBorda,
+          'rgb(255,255,255)'
+        );
+      }
+      this.andar();
+      this._alimentacao--;
+      //validações de possíveis Causas de morte
+      if (this._numeroDeCiclos % this.velocidadeReproducao == 0) {
+        this._vontadeDeReproducao = Math.min(
+          1000,
+          this.vontadeDeReproducao + 1
+        );
+      }
+      if (this.numeroDeCiclos > this.longevidade) {
+        this._causaDaMorte = CausaDaMorte.Velhice;
+        this.corDaBorda = 'rgb(221,217,206)';
+      }
+      if (this.alimentacao <= 0) {
+        this._causaDaMorte = CausaDaMorte.Fome;
         this.corDaBorda = 'rgb(255,255,0)';
+      }
+      //se houve uma causa da morte ele para de repetir ciclos
+      if (this.causaDaMorte !== 'Ainda vivo') {
+        console.log('Walker ' + this.id + ' morreu!');
+        this._status = StatusWalker.Morto;
         clearInterval(interval);
       }
-      this.$numeroDeCiclos++;
+      this._numeroDeCiclos++;
     }, this.velocidade);
   }
 
@@ -166,52 +363,54 @@ export class Walker {
    * Recebe o ultimo passo dado e coloca no fim de this.$ultimosPassosDados
    */
   private acrescentarUltimoPassoDado(passo: Passo) {
-    if (this.$ultimosPassosDados.length > 5) {
-      this.$ultimosPassosDados.shift();
+    if (this._ultimosPassosDados.length > 5) {
+      this._ultimosPassosDados.shift();
     }
-    this.$ultimosPassosDados.push(passo);
+    this._ultimosPassosDados.push(passo);
   }
 
   /**
    * Executa o primeiro passo que estiver no array this.$passos e joga o passo para this.$ultimosPassosDados
    */
   private andar() {
-    let passo = this.$passos.shift();
-    if (passo) this.acrescentarUltimoPassoDado(passo);
-    switch (passo?.direcao) {
-      case Direcao.Cima:
-        this.irParaCima(passo.tamanhoDoPasso);
-        break;
-      case Direcao.CimaDireita:
-        this.irParaCima(passo.tamanhoDoPasso);
-        this.irParaDireita(passo.tamanhoDoPasso);
-        break;
-      case Direcao.Direita:
-        this.irParaDireita(passo.tamanhoDoPasso);
-        break;
-      case Direcao.BaixoDireita:
-        this.irParaBaixo(passo.tamanhoDoPasso);
-        this.irParaDireita(passo.tamanhoDoPasso);
-        break;
-      case Direcao.Baixo:
-        this.irParaBaixo(passo.tamanhoDoPasso);
-        break;
-      case Direcao.BaixoEsquerda:
-        this.irParaBaixo(passo.tamanhoDoPasso);
-        this.irParaEsquerda(passo.tamanhoDoPasso);
-        break;
-      case Direcao.Esquerda:
-        this.irParaEsquerda(passo.tamanhoDoPasso);
-        break;
-      case Direcao.CimaEsquerda:
-        this.irParaCima(passo.tamanhoDoPasso);
-        this.irParaEsquerda(passo.tamanhoDoPasso);
-        break;
-      case undefined:
-        break;
-      default:
-        console.log('Direcao ' + passo?.direcao + ' não mapeada');
-        break;
+    let passo = this._passos.shift();
+    if (passo != undefined) {
+      this.acrescentarUltimoPassoDado(passo);
+      switch (passo.direcao) {
+        case Direcao.Cima:
+          this.irParaCima(passo.tamanhoDoPasso);
+          break;
+        case Direcao.CimaDireita:
+          this.irParaCima(passo.tamanhoDoPasso);
+          this.irParaDireita(passo.tamanhoDoPasso);
+          break;
+        case Direcao.Direita:
+          this.irParaDireita(passo.tamanhoDoPasso);
+          break;
+        case Direcao.BaixoDireita:
+          this.irParaBaixo(passo.tamanhoDoPasso);
+          this.irParaDireita(passo.tamanhoDoPasso);
+          break;
+        case Direcao.Baixo:
+          this.irParaBaixo(passo.tamanhoDoPasso);
+          break;
+        case Direcao.BaixoEsquerda:
+          this.irParaBaixo(passo.tamanhoDoPasso);
+          this.irParaEsquerda(passo.tamanhoDoPasso);
+          break;
+        case Direcao.Esquerda:
+          this.irParaEsquerda(passo.tamanhoDoPasso);
+          break;
+        case Direcao.CimaEsquerda:
+          this.irParaCima(passo.tamanhoDoPasso);
+          this.irParaEsquerda(passo.tamanhoDoPasso);
+          break;
+        case undefined:
+          break;
+        default:
+          console.log('Direcao ' + passo.direcao + ' não mapeada');
+          break;
+      }
     }
   }
 
@@ -221,75 +420,78 @@ export class Walker {
    * @param tamanhoDoPasso É quantos pixels aquele passo ira mover o walker
    */
   private acrescentarPassos(direcao: Direcao, tamanhoDoPasso: number) {
-    this.$passos.push(new Passo(direcao, tamanhoDoPasso));
+    this._passos.push(new Passo(direcao, tamanhoDoPasso));
   }
 
   /**
    *
-   * @param alimento
+   * @param coordenada
    *
    * Recebe um alimento e gera um espécie de rota para ele, e coloca os passos em this.$passos
    */
-  private passosParaUmAlimento(alimento: Alimento): void {
+  private passosParaUmaCoordenada(coordenada: { x: number; y: number }): void {
     let distanciaEixo = 0;
     let qtdPassos = 0;
-    if (this.x === alimento.x) {
+    if (this.x === coordenada.x) {
       qtdPassos = Math.trunc(
-        Math.abs(this.y - alimento.y) / this.tamanhoDoPasso
+        Math.abs(this.y - coordenada.y) / this.tamanhoDoPasso
       );
-    } else if (this.y === alimento.y) {
+    } else if (this.y === coordenada.y) {
       qtdPassos = Math.trunc(
-        Math.abs(this.x - alimento.x) / this.tamanhoDoPasso
+        Math.abs(this.x - coordenada.x) / this.tamanhoDoPasso
       );
-    } else if (Math.abs(this.x - alimento.x) > Math.abs(this.y - alimento.y)) {
-      distanciaEixo = Math.abs(this.y - alimento.y);
+    } else if (
+      Math.abs(this.x - coordenada.x) > Math.abs(this.y - coordenada.y)
+    ) {
+      distanciaEixo = Math.abs(this.y - coordenada.y);
+      qtdPassos = Math.trunc(distanciaEixo / this.tamanhoDoPasso);
     } else {
-      distanciaEixo = Math.abs(this.x - alimento.x);
+      distanciaEixo = Math.abs(this.x - coordenada.x);
       qtdPassos = Math.trunc(distanciaEixo / this.tamanhoDoPasso);
     }
-    if (this.x === alimento.x && this.y < alimento.y) {
+    if (this.x === coordenada.x && this.y < coordenada.y) {
       for (let i = 0; i < qtdPassos; i++) {
         this.acrescentarPassos(Direcao.Cima, this.tamanhoDoPasso);
       }
       return;
     }
-    if (this.x < alimento.x && this.y < alimento.y) {
+    if (this.x < coordenada.x && this.y < coordenada.y) {
       for (let i = 0; i < qtdPassos; i++) {
         this.acrescentarPassos(Direcao.CimaDireita, this.tamanhoDoPasso);
       }
       return;
     }
-    if (this.x < alimento.x && this.y === alimento.y) {
+    if (this.x < coordenada.x && this.y === coordenada.y) {
       for (let i = 0; i < qtdPassos; i++) {
         this.acrescentarPassos(Direcao.Direita, this.tamanhoDoPasso);
       }
       return;
     }
-    if (this.x < alimento.x && this.y > alimento.y) {
+    if (this.x < coordenada.x && this.y > coordenada.y) {
       for (let i = 0; i < qtdPassos; i++) {
         this.acrescentarPassos(Direcao.BaixoDireita, this.tamanhoDoPasso);
       }
       return;
     }
-    if (this.x === alimento.x && this.y > alimento.y) {
+    if (this.x === coordenada.x && this.y > coordenada.y) {
       for (let i = 0; i < qtdPassos; i++) {
         this.acrescentarPassos(Direcao.Baixo, this.tamanhoDoPasso);
       }
       return;
     }
-    if (this.x > alimento.x && this.y > alimento.y) {
+    if (this.x > coordenada.x && this.y > coordenada.y) {
       for (let i = 0; i < qtdPassos; i++) {
         this.acrescentarPassos(Direcao.BaixoEsquerda, this.tamanhoDoPasso);
       }
       return;
     }
-    if (this.x > alimento.x && this.y === alimento.y) {
+    if (this.x > coordenada.x && this.y === coordenada.y) {
       for (let i = 0; i < qtdPassos; i++) {
         this.acrescentarPassos(Direcao.Esquerda, this.tamanhoDoPasso);
       }
       return;
     }
-    if (this.x > alimento.x && this.y < alimento.y) {
+    if (this.x > coordenada.x && this.y < coordenada.y) {
       for (let i = 0; i < qtdPassos; i++) {
         this.acrescentarPassos(Direcao.CimaEsquerda, this.tamanhoDoPasso);
       }
@@ -298,13 +500,20 @@ export class Walker {
   }
 
   private comer(alimento: Alimento, listaDeAlimentos: Alimento[]): void {
-    this.$x = alimento.x;
-    this.$y = alimento.y;
+    this._x = alimento.x;
+    this._y = alimento.y;
     listaDeAlimentos.splice(listaDeAlimentos.indexOf(alimento), 1);
-    this.$qtdAlimentoComido++;
-    this.$fome += Math.round(alimento.tipo * window.innerHeight * 0.1);
+    this._qtdAlimentoComido++;
+    this._alimentacao += Math.round(
+      alimento.tipo * Math.max(window.innerHeight, window.innerWidth) * 0.1
+    );
   }
 
+  /**
+   *
+   * @param alimentos Lista de alimentos dísponíveis
+   * @returns Retorna um alimento perto o suficiente para ir buscá-lo
+   */
   private alimentoMaisProximo(
     alimentos: Alimento[]
   ): { alimento: Alimento; distancia: number } {
@@ -319,6 +528,7 @@ export class Walker {
       if (alimentoAtual.distancia < alimentoMenorDistancia.distancia) {
         alimentoMenorDistancia = alimentoAtual;
       }
+      //esse if aqui garante que ele traga um alimento perto o suficiente e evite de buscar em varrer em todos os alimentos
       if (Math.round(alimentoAtual.distancia) < this.forcaDeVontade) {
         break;
       }
@@ -328,34 +538,116 @@ export class Walker {
   }
 
   private irParaCima(forca: number) {
-    this.$y = Math.min(
+    this._y = Math.min(
       this.y + forca,
       window.innerHeight - (this.tamanho + 20) * 2
     );
   }
 
   private irParaBaixo(forca: number) {
-    this.$y = Math.max(this.y - forca, 0);
+    this._y = Math.max(this.y - forca, 0);
   }
 
   private irParaDireita(forca: number) {
-    this.$x = Math.min(
+    this._x = Math.min(
       this.x + forca,
       window.innerWidth - (this.tamanho + 20) * 2
     );
   }
 
   private irParaEsquerda(forca: number) {
-    this.$x = Math.max(this.x - forca, 0);
-  }
-
-  //ao usar o andar não há necessidade de retirar o passo, pois ele já retira
-  private retirarPasso() {
-    this.$passos.shift();
+    this._x = Math.max(this.x - forca, 0);
   }
 
   //retira todos os passos
   private limparPassos() {
-    this.$passos = [];
+    this._passos = [];
+  }
+
+  /**
+   *
+   * @param walkers Recebe a lista de walkers disponíveis
+   * @returns Retorna o parceira do sexo oposto pronto para reprodução mais próximo
+   */
+  private encontrarParceiroMaisProximo(
+    walkers: Walker[]
+  ): { walker: Walker; distancia: number } | null {
+    let possiveisParceiros: { walker: Walker; distancia: number }[] = [];
+    for (let i = 0; i < walkers.length; i++) {
+      const walker = walkers[i];
+      const distancia = Math.hypot(
+        walkers[i].x - this.x,
+        walkers[i].y - this.y
+      );
+
+      if (
+        walker.sexo !== this.sexo &&
+        walker.prontoParaReproduzir &&
+        walker._causaDaMorte == null
+      ) {
+        possiveisParceiros.push({ walker: walker, distancia: distancia });
+        if (distancia < this.forcaDeVontade) {
+          break;
+        }
+      }
+    }
+    if (possiveisParceiros.length > 0) {
+      possiveisParceiros.sort((a, b) => {
+        return a.distancia - b.distancia;
+      });
+      return possiveisParceiros[0];
+    }
+    return null;
+  }
+
+  /**
+   *
+   * @param alimentos Lista de alimentos disponíveis
+   * @returns Retorna se o alimento ainda existe ou não
+   */
+  private alimentoBuscadoAindaExiste(alimentos: Alimento[]): boolean {
+    if (this._alimentoSendoBuscado != null) {
+      return alimentos.includes(this._alimentoSendoBuscado);
+    }
+    return false;
+  }
+
+  /**
+   *
+   * @param walkers Lista de walkers disponíveis
+   * @returns Retorna se o walker ainda está pronto para reprodução ou não
+   */
+  private parceiroBuscadoAindaExiste(walkers: Walker[]): boolean {
+    if (this._parceiroSendoBuscado != null) {
+      for (let i = 0; i < walkers.length; i++) {
+        const element = walkers[i];
+        if (element.id === this._parceiroSendoBuscado.id) {
+          if (element.prontoParaReproduzir && element.causaDaMorte == null) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  }
+
+  //tratar isso aqui pra pegar os genes do pai e da mãe
+  private acasalar(walkers: Walker[], alimentos: Alimento[]): void {
+    let index = walkers.push(
+      new Walker(
+        walkers.length + 1,
+        this.x,
+        this.y,
+        'rgb(5,5,5)',
+        0,
+        30,
+        60,
+        1,
+        sortearSexo(),
+        this.velocidadeReproducao,
+        this.longevidade
+      )
+    );
+    walkers[index - 1].comecarAndar(alimentos, walkers);
   }
 }

@@ -55,7 +55,7 @@ export function sleep(ms: number) {
 
 /**
  *
- * @param p quanto a primeira cor vai recer da segunda cor (de 0 a 1)
+ * @param p quanto a primeira cor vai receber da segunda cor (de 0 a 1)
  * @param c0 primeira cor em RGB ou RGBA
  * @param c1 segunda cor em RGB ou RGBA
  * @returns retorna a mistura das cores
@@ -82,16 +82,25 @@ export function misturarCoresRGB(p: number, c0: string, c1: string) {
   return (
     'rgb' +
     (x ? 'a(' : '(') +
-    Math.abs(
-      Math.round(
-        parseInt(cor1[3] == 'a' ? cor1.slice(5) : cor1.slice(4)) * P +
-          parseInt(cor4[3] == 'a' ? cor4.slice(5) : cor4.slice(4)) * p
+    Math.min(
+      255,
+      Math.abs(
+        Math.round(
+          parseInt(cor1[3] == 'a' ? cor1.slice(5) : cor1.slice(4)) * P +
+            parseInt(cor4[3] == 'a' ? cor4.slice(5) : cor4.slice(4)) * p
+        )
       )
     ) +
     ',' +
-    Math.abs(Math.round(parseInt(cor2) * P + parseInt(cor5) * p)) +
+    Math.min(
+      255,
+      Math.abs(Math.round(parseInt(cor2) * P + parseInt(cor5) * p))
+    ) +
     ',' +
-    Math.abs(Math.round(parseInt(cor3) * P + parseInt(cor6) * p)) +
+    Math.min(
+      255,
+      Math.abs(Math.round(parseInt(cor3) * P + parseInt(cor6) * p))
+    ) +
     j
   );
 }

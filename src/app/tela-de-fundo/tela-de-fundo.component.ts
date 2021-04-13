@@ -12,6 +12,9 @@ import {
   sortearForcaDeVontade,
   sortearCorRGB,
   getRandomInt,
+  sortearSexo,
+  sortearLongevidade,
+  sortearVelocidadeDeReproducao,
 } from '../funcoes/sorteios';
 
 @Component({
@@ -22,16 +25,19 @@ import {
 export class TelaDeFundoComponent implements OnInit {
   constructor(private route: ActivatedRoute) {}
 
-  private $alimentosGeradosPorVez: number = this.getParametroRotaNumeroDeIndividuos();
-  private $totalAlimentoGerado: number = 0;
-  private $timeOut: any;
-  private $flagGerarAlimentos: boolean = false;
+  // private _alimentosGeradosPorVez: number = 50;
+  private _alimentosGeradosPorVez: number = this.getParametroRotaNumeroDeIndividuos();
+  private _totalAlimentoGerado: number = 0;
+  private _timeOut: any;
+  private _flagGerarAlimentosX: boolean = true;
+  private _flagGerarAlimentosY: boolean = true;
 
   public walkers: Walker[] = [];
   public tempoEmSegundos: number = 0;
   public tamanhosWalkers: any[] = [];
   public alimentos: Alimento[] = [];
   public dadosCard: Walker | null = null;
+  public propriedadesWalker: string[] = [];
 
   public mostrarTabelas: boolean = true;
 
@@ -45,7 +51,24 @@ export class TelaDeFundoComponent implements OnInit {
     return window.innerHeight;
   }
   public get totalAlimentoGerado(): number {
-    return this.$totalAlimentoGerado;
+    return this._totalAlimentoGerado;
+  }
+  public get sexos(): any[] {
+    return calcularQuantidadeArray(
+      this.walkers.map((elemento) => {
+        return elemento.sexo ? 'Macho' : 'Fêmea';
+      }),
+      '',
+      'Sexo'
+    );
+  }
+
+  public get causaDaMortePorQuantidade(): any[] {
+    return calcularQuantidadeArray(
+      this.walkers,
+      'causaDaMorte',
+      'Causa da Morte'
+    );
   }
 
   ngOnInit(): void {
@@ -58,7 +81,6 @@ export class TelaDeFundoComponent implements OnInit {
       '',
       'Tamanho'
     );
-    this.gerarAlimentos();
     this.loop();
     // this.calcularVariancias();
     // this.ruidoDePerlin();
@@ -98,18 +120,32 @@ export class TelaDeFundoComponent implements OnInit {
           sortearTamanho(),
           sortearVelocidade(),
           sortearForcaDeVontade(),
-          sortearTamanhoDoPasso()
+          sortearTamanhoDoPasso(),
+          sortearSexo(),
+          sortearVelocidadeDeReproducao(),
+          sortearLongevidade()
         )
       );
     }
   }
 
   gerarAlimentos() {
-    this.$flagGerarAlimentos = !this.$flagGerarAlimentos;
-    for (let i = 0; i < this.$alimentosGeradosPorVez; i++) {
+    if (this._flagGerarAlimentosX && this._flagGerarAlimentosY) {
+      this._flagGerarAlimentosY = false;
+    } else if (this._flagGerarAlimentosX && !this._flagGerarAlimentosY) {
+      this._flagGerarAlimentosX = false;
+      this._flagGerarAlimentosY = false;
+    } else if (!this._flagGerarAlimentosX && !this._flagGerarAlimentosY) {
+      this._flagGerarAlimentosY = true;
+    } else {
+      this._flagGerarAlimentosX = true;
+      this._flagGerarAlimentosY = true;
+    }
+
+    for (let i = 0; i < this._alimentosGeradosPorVez; i++) {
       this.alimentos.push(
         new Alimento(
-          this.$flagGerarAlimentos
+          this._flagGerarAlimentosX
             ? Math.trunc(
                 Math.min(
                   randn_bm() * (this.totalEixoX / 8) + this.totalEixoX / 2,
@@ -117,7 +153,7 @@ export class TelaDeFundoComponent implements OnInit {
                 )
               )
             : getRandomInt(50, this.totalEixoX / 2),
-          !this.$flagGerarAlimentos
+          this._flagGerarAlimentosY
             ? Math.trunc(
                 Math.min(
                   randn_bm() * (this.totalEixoY / 8) + this.totalEixoY / 2,
@@ -128,20 +164,21 @@ export class TelaDeFundoComponent implements OnInit {
           sortearTipoAlimento()
         )
       );
-      this.$totalAlimentoGerado++;
+      this._totalAlimentoGerado++;
     }
   }
 
   loop() {
+    this.gerarAlimentos();
     setInterval(() => {
       this.tempoEmSegundos++;
     }, 1000);
     setInterval(() => {
       if (this.alimentos.length < this.walkers.length * 2)
         this.gerarAlimentos();
-    }, 5000);
+    }, 10000);
     this.walkers.forEach((walker) => {
-      walker.comecarAndar(this.alimentos);
+      walker.comecarAndar(this.alimentos, this.walkers);
     });
   }
 
@@ -182,11 +219,15 @@ export class TelaDeFundoComponent implements OnInit {
   public atualizarCard(walker: Walker) {
     this.dadosCard = walker;
 
-    clearTimeout(this.$timeOut);
+    clearTimeout(this._timeOut);
 
-    this.$timeOut = setTimeout(() => {
+    this._timeOut = setTimeout(() => {
       this.dadosCard = null;
     }, 5000);
+  }
+
+  public fecharCard() {
+    this.dadosCard = null;
   }
 
   public inverterMostrarTabelas(): void {
