@@ -18,19 +18,20 @@ import {
 } from '../funcoes/sorteios';
 
 @Component({
-  selector: 'app-tela-de-fundo',
-  templateUrl: './tela-de-fundo.component.html',
-  styleUrls: ['./tela-de-fundo.component.scss'],
+  selector: 'app-simulacao-inicial',
+  templateUrl: './simulacao-inicial.component.html',
+  styleUrls: ['./simulacao-inicial.component.scss'],
 })
-export class TelaDeFundoComponent implements OnInit {
+export class SimulacaoInicialComponent implements OnInit {
   constructor(private route: ActivatedRoute) {}
 
-  // private _alimentosGeradosPorVez: number = 50;
   private _alimentosGeradosPorVez: number = this.getParametroRotaNumeroDeIndividuos();
   private _totalAlimentoGerado: number = 0;
   private _timeOut: any;
   private _flagGerarAlimentosX: boolean = true;
   private _flagGerarAlimentosY: boolean = true;
+
+  private _intervalAlimento: any;
 
   public walkers: Walker[] = [];
   public tempoEmSegundos: number = 0;
@@ -38,21 +39,34 @@ export class TelaDeFundoComponent implements OnInit {
   public alimentos: Alimento[] = [];
   public dadosCard: Walker | null = null;
   public propriedadesWalker: string[] = [];
+  public velocidadeSimulacao: number = 1;
+
+  public multiplicadorDeVelocidade: number = 1;
 
   public mostrarTabelas: boolean = true;
 
   public get totalWalkers(): number {
     return this.walkers.length;
   }
+
+  public get totalWalkersVivos(): number {
+    return this.walkers.filter((elemento) => {
+      return elemento.causaDaMorte == 'Ainda vivo';
+    }).length;
+  }
+
   public get totalEixoX(): number {
     return window.innerWidth;
   }
+
   public get totalEixoY(): number {
     return window.innerHeight;
   }
+
   public get totalAlimentoGerado(): number {
     return this._totalAlimentoGerado;
   }
+
   public get sexos(): any[] {
     return calcularQuantidadeArray(
       this.walkers.map((elemento) => {
@@ -71,6 +85,18 @@ export class TelaDeFundoComponent implements OnInit {
     );
   }
 
+  public get mediasWalkers(): { chave: string; media: number }[] {
+    let retorno: { chave: string; media: number }[] = [];
+    let totalIndividuos: number = this.walkers.length;
+    let velocidades: number = 0;
+    this.walkers.forEach((elem) => {
+      velocidades += elem.velocidade;
+    });
+    velocidades = velocidades / totalIndividuos;
+    retorno.push({ chave: 'Velocidade', media: velocidades });
+    return retorno;
+  }
+
   ngOnInit(): void {
     this.gerarWalkers();
 
@@ -82,8 +108,6 @@ export class TelaDeFundoComponent implements OnInit {
       'Tamanho'
     );
     this.loop();
-    // this.calcularVariancias();
-    // this.ruidoDePerlin();
   }
 
   getParametroRotaNumeroDeIndividuos(): number {
@@ -123,7 +147,9 @@ export class TelaDeFundoComponent implements OnInit {
           sortearTamanhoDoPasso(),
           sortearSexo(),
           sortearVelocidadeDeReproducao(),
-          sortearLongevidade()
+          sortearLongevidade(),
+          this.alimentos,
+          this.walkers
         )
       );
     }
@@ -168,21 +194,23 @@ export class TelaDeFundoComponent implements OnInit {
     }
   }
 
-  loop() {
+  private loop() {
     this.gerarAlimentos();
     setInterval(() => {
       this.tempoEmSegundos++;
     }, 1000);
-    setInterval(() => {
-      if (this.alimentos.length < this.walkers.length * 2)
+
+    this._intervalAlimento = setInterval(() => {
+      if (this.alimentos.length < this._alimentosGeradosPorVez)
         this.gerarAlimentos();
     }, 10000);
+
     this.walkers.forEach((walker) => {
-      walker.comecarAndar(this.alimentos, this.walkers);
+      walker.comecarAndar();
     });
   }
 
-  trocarCorDeFundoEFazerAcao(
+  public trocarCorDeFundoEFazerAcao(
     walker: Walker,
     evento: {
       cor: string;
@@ -195,14 +223,9 @@ export class TelaDeFundoComponent implements OnInit {
     setTimeout(() => {
       walker.corDaBorda = corAntiga;
     }, 5000);
-
-    //implementar função de repelir ao clicar
-    /**
-     * Essa função fará os wlakers próximos daquele clicado se repelirem dele
-     */
   }
 
-  async ruidoDePerlin(x = 0.0, y = 0.0, incremento = 0.01) {
+  private async ruidoDePerlin(x = 0.0, y = 0.0, incremento = 0.01) {
     var xoff = x;
     for (var x = 0; x < 100; x++) {
       var yoff = y;
@@ -232,6 +255,24 @@ export class TelaDeFundoComponent implements OnInit {
 
   public inverterMostrarTabelas(): void {
     this.mostrarTabelas = !this.mostrarTabelas;
+  }
+
+  public mudarAlimentoGeradoPorVez(numero: number) {
+    this._alimentosGeradosPorVez = numero;
+  }
+
+  public mudarVelocidadeSimulacao(multiplicadorDeVelocidade: number) {
+    this.multiplicadorDeVelocidade = multiplicadorDeVelocidade;
+
+    this.walkers.forEach((walker) => {
+      walker.multiplicadorDeVelocidade = multiplicadorDeVelocidade;
+    });
+
+    clearInterval(this._intervalAlimento);
+    this._intervalAlimento = setInterval(() => {
+      if (this.alimentos.length < this._alimentosGeradosPorVez)
+        this.gerarAlimentos();
+    }, 50000 / this.multiplicadorDeVelocidade);
   }
 
   // colocarPassosPraTodos(numeroDePassos: number) {

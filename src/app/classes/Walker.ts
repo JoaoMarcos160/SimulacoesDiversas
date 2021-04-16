@@ -32,6 +32,9 @@ import { Passo } from './Passo';
  */
 
 export class Walker {
+  private static alimentos: Alimento[];
+  private static walkers: Walker[];
+
   private _id: number = 0;
   private _x: number = 0;
   private _y: number = 0;
@@ -48,7 +51,16 @@ export class Walker {
   private _alimentoSendoBuscado: Alimento | null = null;
   private _parceiroSendoBuscado: Walker | null = null;
   private _status: StatusWalker = StatusWalker.ProcurandoComida;
+  private _multiplicadorDeVelocidade: number = 1;
 
+  /**
+   * Tempo em milisegundos para ele andar, quanto mais alto mais lento
+   */
+  private _velocidade: number = 750;
+
+  private _interval: any = 0;
+
+  //Propriedades públicas
   /**
    * Cor do padding do walker
    */
@@ -57,10 +69,6 @@ export class Walker {
    * Quantos pixels terá o padding do walker
    */
   public tamanho: number = 0;
-  /**
-   * Tempo em milisegundos para ele andar, quanto mais alto mais lento
-   */
-  public velocidade: number = 750;
 
   /**
    *  Numeros de pixels que ele estará disposto para pular em um alimento
@@ -145,9 +153,29 @@ export class Walker {
    * Indica se o walker está pronto para reprodução
    */
   public get prontoParaReproduzir(): boolean {
-    return this.vontadeDeReproducao >= 1000 && this.alimentacao > 1000;
+    return this.vontadeDeReproducao >= 500 && this.alimentacao > 1000;
+    // return this.vontadeDeReproducao >= 1000 && this.alimentacao > 1000;
   }
 
+  /**
+   * Quanto maior o número mais rápido será a velocidade do walker
+   */
+  public get multiplicadorDeVelocidade() {
+    return this._multiplicadorDeVelocidade;
+  }
+
+  /**
+   * Trata para ser um valor entre 1 e 5
+   */
+  public set multiplicadorDeVelocidade(novoValor) {
+    clearInterval(this._interval);
+    this.comecarAndar();
+    this._multiplicadorDeVelocidade = Math.min(Math.max(novoValor, 1), 5);
+  }
+
+  public get velocidade(): number {
+    return this._velocidade / this.multiplicadorDeVelocidade;
+  }
   /**
    * De quanto em quantos ciclos sua vontade de se reproduzir aumentará, quanto mais alto o numero mais lentamente
    */
@@ -195,14 +223,18 @@ export class Walker {
     tamanhoDoPasso: number,
     sexo: boolean,
     velocidadeDeReproducao: number,
-    longevidade: number
+    longevidade: number,
+    alimentos: Alimento[],
+    walkers: Walker[]
   ) {
+    Walker.alimentos = alimentos;
+    Walker.walkers = walkers;
     this._id = id;
     this._x = Math.max(width, 0);
     this._y = Math.max(height, 0);
     this.corDaBorda = corDaBorda;
     this.tamanho = tamanho;
-    this.velocidade = velocidade;
+    this._velocidade = velocidade;
     this.forcaDeVontade = forcaDeVontade;
     this.tamanhoDoPasso = tamanhoDoPasso;
     this._sexo = sexo;
@@ -216,8 +248,8 @@ export class Walker {
    *
    * @returns Faz o walker começar a andar colocando ele num loop de setInterval que se repete na sua velocidade
    */
-  comecarAndar(alimentos: Alimento[], walkers: Walker[]) {
-    let interval = setInterval(() => {
+  comecarAndar() {
+    this._interval = setInterval(() => {
       if (this.passosArmazenados === 0) {
         if (this.prontoParaReproduzir) {
           //fêmeas ficam paradas
@@ -225,7 +257,9 @@ export class Walker {
             this.acrescentarPassos(Direcao.Cima, 0);
             this._status = StatusWalker.IndoAteParceiro;
           } else {
-            let retornoWalker = this.encontrarParceiroMaisProximo(walkers);
+            let retornoWalker = this.encontrarParceiroMaisProximo(
+              Walker.walkers
+            );
             if (retornoWalker) {
               if (
                 Math.round(retornoWalker.distancia) <
@@ -234,15 +268,15 @@ export class Walker {
                 this._x = retornoWalker.walker.x;
                 this._y = retornoWalker.walker.y;
                 //acasalamento aqui
-                this.acasalar(walkers, alimentos);
+                this.acasalar(retornoWalker.walker);
                 let flag = true;
                 for (let i = 0; i < 20; i++) {
                   if (flag) {
                     flag = !flag;
                     this.acrescentarPassos(Direcao.Direita, 20);
                   } else {
-                    this.acrescentarPassos(Direcao.Esquerda, 20);
                     flag = !flag;
+                    this.acrescentarPassos(Direcao.Esquerda, 20);
                   }
                 }
                 //perde alimentação ao se reproduzir
@@ -273,12 +307,12 @@ export class Walker {
               this._status = StatusWalker.ProcurandoComida;
             }
           }
-        } else if (alimentos.length > 0) {
-          let retornoAlimento = this.alimentoMaisProximo(alimentos);
+        } else if (Walker.alimentos.length > 0) {
+          let retornoAlimento = this.alimentoMaisProximo(Walker.alimentos);
           //se o alimento estiver muito perto ele já pula no alimento e come
           if (Math.round(retornoAlimento.distancia) < this.forcaDeVontade / 2) {
             //ele pula até o alimento
-            this.comer(retornoAlimento.alimento, alimentos);
+            this.comer(retornoAlimento.alimento, Walker.alimentos);
           }
           //isso aqui faz eles não irem atrás de alimentos muito longe
           if (retornoAlimento.distancia < this.forcaDeVontade * 8) {
@@ -309,14 +343,14 @@ export class Walker {
         //isso tambpem faz que eles não fiquem indo em coordenadas que os alimentos nem existem mais
         if (
           this._status === StatusWalker.IndoAteAlimento &&
-          !this.alimentoBuscadoAindaExiste(alimentos)
+          !this.alimentoBuscadoAindaExiste(Walker.alimentos)
         ) {
           this.limparPassos();
           this._status = StatusWalker.ProcurandoComida;
         }
         if (
           this._status === StatusWalker.IndoAteParceiro &&
-          !this.parceiroBuscadoAindaExiste(walkers)
+          !this.parceiroBuscadoAindaExiste(Walker.walkers)
         ) {
           this.limparPassos();
           this._status = StatusWalker.ProcurandoComida;
@@ -351,7 +385,7 @@ export class Walker {
       if (this.causaDaMorte !== 'Ainda vivo') {
         console.log('Walker ' + this.id + ' morreu!');
         this._status = StatusWalker.Morto;
-        clearInterval(interval);
+        clearInterval(this._interval);
       }
       this._numeroDeCiclos++;
     }, this.velocidade);
@@ -632,22 +666,49 @@ export class Walker {
   }
 
   //tratar isso aqui pra pegar os genes do pai e da mãe
-  private acasalar(walkers: Walker[], alimentos: Alimento[]): void {
-    let index = walkers.push(
+  private acasalar(parceiro: Walker): void {
+    Walker.walkers.push(
       new Walker(
-        walkers.length + 1,
+        Walker.walkers.length + 1,
         this.x,
         this.y,
-        'rgb(5,5,5)',
-        0,
-        30,
-        60,
-        1,
+        misturarCoresRGB(0.5, this.corDaBorda, parceiro.corDaBorda),
+        getRandomInt(
+          Math.min(this.tamanho + parceiro.tamanho),
+          Math.max(this.tamanho + parceiro.tamanho)
+        ),
+        getRandomInt(
+          Math.min(this._velocidade + parceiro._velocidade),
+          Math.max(this._velocidade + parceiro._velocidade)
+        ),
+        getRandomInt(
+          Math.min(this.forcaDeVontade + parceiro.forcaDeVontade),
+          Math.max(this.forcaDeVontade + parceiro.forcaDeVontade)
+        ),
+        getRandomInt(
+          Math.min(this.tamanhoDoPasso + parceiro.tamanhoDoPasso),
+          Math.max(this.tamanhoDoPasso + parceiro.tamanhoDoPasso)
+        ),
         sortearSexo(),
-        this.velocidadeReproducao,
-        this.longevidade
+        getRandomInt(
+          Math.min(this.velocidadeReproducao + parceiro.velocidadeReproducao),
+          Math.max(this.velocidadeReproducao + parceiro.velocidadeReproducao)
+        ),
+        getRandomInt(
+          Math.min(this.longevidade + parceiro.longevidade),
+          Math.max(this.longevidade + parceiro.longevidade)
+        ),
+        Walker.alimentos,
+        Walker.walkers
       )
     );
-    walkers[index - 1].comecarAndar(alimentos, walkers);
+    Walker.walkers[Walker.walkers.length - 1].comecarAndar();
+  }
+
+  /**
+   * Para o walker
+   */
+  public paraDeAndar(): void {
+    clearInterval(this._interval);
   }
 }

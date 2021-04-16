@@ -34,6 +34,6 @@ export class CardWalkerComponent implements OnInit {
       'Baixo Esquerda',
       'Esquerda',
       'Cima Esquerda',
-    ][this.walker.ultimoPasso.direcao - 1];
+    ][this.walker.ultimoPasso.direcao];
   }
 }

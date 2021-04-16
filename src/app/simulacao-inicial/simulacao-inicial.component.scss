@@ -1,0 +1,27 @@
+.fundo {
+  position: relative;
+  margin: 5px;
+  background-color: whitesmoke;
+}
+
+.fundo-dark {
+  position: relative;
+  margin: 5px;
+  background-color: grey;
+}
+
+.div-tabelas {
+  position: absolute;
+  height: fit-content;
+  width: fit-content;
+  margin: 5px;
+}
+
+.div-comandos {
+  position: absolute;
+  height: fit-content;
+  width: fit-content;
+  left: auto;
+  right: 0px;
+  margin: 5px;
+}

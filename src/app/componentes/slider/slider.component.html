@@ -1,0 +1,16 @@
+<div class="slidecontainer">
+  <label class="label">{{ label }}</label>
+  <input
+    #slider
+    id="myRange"
+    class="slider"
+    type="range"
+    [min]="valorMin"
+    [max]="valorMax"
+    [value]="valorAtual"
+    (change)="emitirEventoChange(slider.value)"
+    (input)="emitirEventoChange(slider.value)"
+  />
+  <!-- (change)="emitirEventoChange($event)" -->
+  <label>{{ valorAtual }}</label>
+</div>

@@ -1,20 +1,20 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { TelaDeFundoComponent } from './tela-de-fundo.component';
+import { SimulacaoInicialComponent } from './simulacao-inicial.component';
 
-describe('TelaDeFundoComponent', () => {
-  let component: TelaDeFundoComponent;
-  let fixture: ComponentFixture<TelaDeFundoComponent>;
+describe('SimulacaoInicialComponent', () => {
+  let component: SimulacaoInicialComponent;
+  let fixture: ComponentFixture<SimulacaoInicialComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ TelaDeFundoComponent ]
+      declarations: [ SimulacaoInicialComponent ]
     })
     .compileComponents();
   });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(TelaDeFundoComponent);
+    fixture = TestBed.createComponent(SimulacaoInicialComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

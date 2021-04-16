@@ -1,12 +1,12 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { SimulacaoNaoEncontradaComponent } from './simulacao-nao-encontrada/simulacao-nao-encontrada.component';
-import { TelaDeFundoComponent } from './tela-de-fundo/tela-de-fundo.component';
+import { SimulacaoInicialComponent } from './simulacao-inicial/simulacao-inicial.component';
 
 const routes: Routes = [
-  { path: '', redirectTo: 'SimulacaoTeste', pathMatch: 'full' },
-  { path: 'SimulacaoTeste/:numeroDeIndividuos', component: TelaDeFundoComponent },
-  { path: 'SimulacaoTeste', component: TelaDeFundoComponent },
+  { path: '', redirectTo: 'SimulacaoInicial', pathMatch: 'full' },
+  { path: 'SimulacaoInicial/:numeroDeIndividuos', component: SimulacaoInicialComponent },
+  { path: 'SimulacaoInicial', component: SimulacaoInicialComponent },
   { path: '**', component: SimulacaoNaoEncontradaComponent },
 ];
 

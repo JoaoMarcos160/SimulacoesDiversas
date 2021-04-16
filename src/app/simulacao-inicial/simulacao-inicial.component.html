@@ -1,9 +1,19 @@
 <div class="fundo ocupar-tudo" (click)="fecharCard()">
   <div class="div-tabelas">
+    <button *ngIf="mostrarTabelas" (click)="inverterMostrarTabelas()">
+      Fechar tabelas
+    </button>
+    <button *ngIf="!mostrarTabelas" (click)="inverterMostrarTabelas()">
+      Abrir tabelas
+    </button>
     <div class="tabela-lateral" *ngIf="mostrarTabelas">
       <app-dado-simples
         [tituloDado]="'Total de indivíduos: '"
         [dado]="totalWalkers"
+      ></app-dado-simples>
+      <app-dado-simples
+        [tituloDado]="'Total de indivíduos vivos: '"
+        [dado]="totalWalkersVivos"
       ></app-dado-simples>
       <app-dado-simples
         [tituloDado]="'Tempo em segundos: '"
@@ -25,6 +35,7 @@
         [tituloDado]="'Alimento disponível: '"
         [dado]="alimentos.length"
       ></app-dado-simples>
+
       <app-tabela-simples
         [titulo]="'Tamanhos'"
         [textField]="'Tamanho'"
@@ -32,7 +43,6 @@
         [dados]="tamanhosWalkers"
         [total]="totalWalkers"
       ></app-tabela-simples>
-
       <app-tabela-simples
         [titulo]="'Longevidade'"
         [textField]="'id'"
@@ -83,6 +93,20 @@
         [total]="totalWalkers"
       ></app-tabela-simples>
     </div>
+  </div>
+  <div class="div-comandos">
+    <app-slider
+      [valorMax]="totalWalkers * 10"
+      [valorMin]="totalWalkers / 10"
+      [label]="'Quantidade de Alimento Gerado por vez'"
+      (onChange)="mudarAlimentoGeradoPorVez($event)"
+    ></app-slider>
+    <app-slider
+      [valorMax]="5"
+      [valorMin]="1"
+      [label]="'Velocidade'"
+      (onChange)="mudarVelocidadeSimulacao($event)"
+    ></app-slider>
   </div>
   <app-walker
     *ngFor="let walker of walkers"
