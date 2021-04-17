@@ -9,7 +9,7 @@
     <div class="tabela-lateral" *ngIf="mostrarTabelas">
       <app-dado-simples
         [tituloDado]="'Total de indivíduos: '"
-        [dado]="totalWalkers"
+        [dado]="totalWalkersQueJaExixtiram"
       ></app-dado-simples>
       <app-dado-simples
         [tituloDado]="'Total de indivíduos vivos: '"
@@ -41,69 +41,71 @@
         [textField]="'Tamanho'"
         [valueField]="'Quantidade'"
         [dados]="tamanhosWalkers"
-        [total]="totalWalkers"
+        [total]="totalWalkersVivos"
       ></app-tabela-simples>
       <app-tabela-simples
         [titulo]="'Longevidade'"
         [textField]="'id'"
         [valueField]="'longevidade'"
         [dados]="walkers"
-        [total]="totalWalkers"
+        [total]="totalWalkersVivos"
       ></app-tabela-simples>
       <app-tabela-simples
         [titulo]="'Ciclos'"
         [textField]="'id'"
         [valueField]="'numeroDeCiclos'"
         [dados]="walkers"
-        [total]="totalWalkers"
+        [total]="totalWalkersVivos"
       ></app-tabela-simples>
       <app-tabela-simples
         [titulo]="'Alimentação'"
         [textField]="'id'"
         [valueField]="'alimentacao'"
         [dados]="walkers"
-        [total]="totalWalkers"
+        [total]="totalWalkersVivos"
       ></app-tabela-simples>
       <app-tabela-simples
         [titulo]="'Força de vontade'"
         [textField]="'id'"
         [valueField]="'forcaDeVontade'"
         [dados]="walkers"
-        [total]="totalWalkers"
+        [total]="totalWalkersVivos"
       ></app-tabela-simples>
       <app-tabela-simples
         [titulo]="'Sexos'"
         [textField]="'Sexo'"
         [valueField]="'Quantidade'"
         [dados]="sexos"
-        [total]="totalWalkers"
+        [total]="totalWalkersVivos"
       ></app-tabela-simples>
       <app-tabela-simples
         [titulo]="'Reprodução'"
         [textField]="'id'"
         [valueField]="'vontadeDeReproducao'"
         [dados]="walkers"
-        [total]="totalWalkers"
+        [total]="totalWalkersVivos"
       ></app-tabela-simples>
       <app-tabela-simples
         [titulo]="'Causa da morte'"
         [textField]="'Causa da Morte'"
         [valueField]="'Quantidade'"
         [dados]="causaDaMortePorQuantidade"
-        [total]="totalWalkers"
+        [total]="totalWalkerMortos"
       ></app-tabela-simples>
     </div>
   </div>
   <div class="div-comandos">
     <app-slider
-      [valorMax]="totalWalkers * 10"
-      [valorMin]="totalWalkers / 10"
+      [valorMax]="totalWalkersVivos * 10"
+      [valorMin]="totalWalkersVivos / 10"
+      [valorAtual]="alimentosGeradosPorVez"
       [label]="'Quantidade de Alimento Gerado por vez'"
       (onChange)="mudarAlimentoGeradoPorVez($event)"
     ></app-slider>
     <app-slider
       [valorMax]="5"
       [valorMin]="1"
+      [valorAtual]="velocidadeSimulacao"
       [label]="'Velocidade'"
       (onChange)="mudarVelocidadeSimulacao($event)"
     ></app-slider>
@@ -112,8 +114,8 @@
     *ngFor="let walker of walkers"
     [walker]="walker"
     (mouseenter)="atualizarCard(walker)"
-    (onClick)="trocarCorDeFundoEFazerAcao(walker, $event)"
   ></app-walker>
+  <!-- (onClick)="trocarCorDeFundoEFazerAcao(walker, $event)" -->
   <app-card-walker
     *ngIf="dadosCard != null"
     [walker]="dadosCard"

@@ -5,20 +5,29 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
   templateUrl: './slider.component.html',
   styleUrls: ['./slider.component.scss'],
 })
-export class SliderComponent implements OnInit {
+export class SliderComponent {
+  private _valorAtual: number;
+
   @Input() label: string = '';
-  @Input() valorMax: number = 0;
-  @Input() valorMin: number = 0;
-  @Output() onChange = new EventEmitter<number>();
+  @Input() valorMax: number;
+  @Input() valorMin: number;
 
-  public valorAtual: number;
-
-  constructor() {
-    this.valorAtual = 0;
+  @Input()
+  public set valorAtual(value: number) {
+    this._valorAtual = value;
+    this.onChange.emit(value);
   }
 
-  ngOnInit(): void {
-    this.valorAtual = Math.max(Math.round(this.valorMax / 2), this.valorMin);
+  @Output() onChange = new EventEmitter<number>();
+
+  public get valorAtual(): number {
+    return this._valorAtual;
+  }
+
+  constructor() {
+    this.valorMax = 0;
+    this.valorMin = 0;
+    this._valorAtual = 0;
   }
 
   emitirEventoChange(event: any) {

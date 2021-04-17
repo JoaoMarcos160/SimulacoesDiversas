@@ -26,6 +26,10 @@ export class SimulacaoInicialComponent implements OnInit {
   constructor(private route: ActivatedRoute) {}
 
   private _alimentosGeradosPorVez: number = this.getParametroRotaNumeroDeIndividuos();
+  public get alimentosGeradosPorVez(): number {
+    return this._alimentosGeradosPorVez;
+  }
+
   private _totalAlimentoGerado: number = 0;
   private _timeOut: any;
   private _flagGerarAlimentosX: boolean = true;
@@ -34,6 +38,7 @@ export class SimulacaoInicialComponent implements OnInit {
   private _intervalAlimento: any;
 
   public walkers: Walker[] = [];
+  public walkersMortos: Walker[] = [];
   public tempoEmSegundos: number = 0;
   public tamanhosWalkers: any[] = [];
   public alimentos: Alimento[] = [];
@@ -45,14 +50,19 @@ export class SimulacaoInicialComponent implements OnInit {
 
   public mostrarTabelas: boolean = true;
 
-  public get totalWalkers(): number {
-    return this.walkers.length;
+  public get totalWalkersQueJaExixtiram(): number {
+    return this.walkers.length + this.walkersMortos.length;
   }
 
   public get totalWalkersVivos(): number {
-    return this.walkers.filter((elemento) => {
-      return elemento.causaDaMorte == 'Ainda vivo';
-    }).length;
+    return this.walkers.length;
+    // return this.walkers.filter((elemento) => {
+    //   return elemento.causaDaMorte == 'Ainda vivo';
+    // }).length;
+  }
+
+  public get totalWalkerMortos(): number {
+    return this.walkersMortos.length;
   }
 
   public get totalEixoX(): number {
@@ -79,7 +89,7 @@ export class SimulacaoInicialComponent implements OnInit {
 
   public get causaDaMortePorQuantidade(): any[] {
     return calcularQuantidadeArray(
-      this.walkers,
+      this.walkersMortos,
       'causaDaMorte',
       'Causa da Morte'
     );
@@ -87,7 +97,7 @@ export class SimulacaoInicialComponent implements OnInit {
 
   public get mediasWalkers(): { chave: string; media: number }[] {
     let retorno: { chave: string; media: number }[] = [];
-    let totalIndividuos: number = this.walkers.length;
+    let totalIndividuos: number = this.totalWalkersVivos;
     let velocidades: number = 0;
     this.walkers.forEach((elem) => {
       velocidades += elem.velocidade;
@@ -98,6 +108,7 @@ export class SimulacaoInicialComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.velocidadeSimulacao = 1;
     this.gerarWalkers();
 
     this.tamanhosWalkers = calcularQuantidadeArray(
@@ -127,7 +138,7 @@ export class SimulacaoInicialComponent implements OnInit {
     for (let i = 0; i < this.getParametroRotaNumeroDeIndividuos(); i++) {
       this.walkers.push(
         new Walker(
-          this.walkers.length + 1,
+          this.totalWalkersQueJaExixtiram + 1,
           Math.trunc(
             Math.min(
               randn_bm() * (this.totalEixoX / 8) + this.totalEixoX / 2,
@@ -149,7 +160,8 @@ export class SimulacaoInicialComponent implements OnInit {
           sortearVelocidadeDeReproducao(),
           sortearLongevidade(),
           this.alimentos,
-          this.walkers
+          this.walkers,
+          this.walkersMortos
         )
       );
     }
@@ -199,31 +211,41 @@ export class SimulacaoInicialComponent implements OnInit {
     setInterval(() => {
       this.tempoEmSegundos++;
     }, 1000);
+  }
 
-    this._intervalAlimento = setInterval(() => {
-      if (this.alimentos.length < this._alimentosGeradosPorVez)
-        this.gerarAlimentos();
-    }, 10000);
+  /**
+   * Ele sempre passa nessa funçaõ no começo
+   * @param multiplicadorDeVelocidade numero de 1 a 5, sendo que quanto maior mais rápido a simulação irá acontecer
+   */
+  public mudarVelocidadeSimulacao(multiplicadorDeVelocidade: number) {
+    this.multiplicadorDeVelocidade = multiplicadorDeVelocidade;
 
     this.walkers.forEach((walker) => {
-      walker.comecarAndar();
+      walker.multiplicadorDeVelocidade = this.multiplicadorDeVelocidade;
     });
+
+    clearInterval(this._intervalAlimento);
+    this._intervalAlimento = setInterval(() => {
+      if (this.alimentos.length < this._alimentosGeradosPorVez) {
+        this.gerarAlimentos();
+      }
+    }, 25000 / this.multiplicadorDeVelocidade);
   }
 
-  public trocarCorDeFundoEFazerAcao(
-    walker: Walker,
-    evento: {
-      cor: string;
-      x: number;
-      y: number;
-    }
-  ) {
-    let corAntiga = walker.corDaBorda;
-    walker.corDaBorda = evento.cor;
-    setTimeout(() => {
-      walker.corDaBorda = corAntiga;
-    }, 5000);
-  }
+  // public trocarCorDeFundoEFazerAcao(
+  //   walker: Walker,
+  //   evento: {
+  //     cor: string;
+  //     x: number;
+  //     y: number;
+  //   }
+  // ) {
+  //   let corAntiga = walker.corDaBorda;
+  //   walker.corDaBorda = evento.cor;
+  //   setTimeout(() => {
+  //     walker.corDaBorda = corAntiga;
+  //   }, 5000);
+  // }
 
   private async ruidoDePerlin(x = 0.0, y = 0.0, incremento = 0.01) {
     var xoff = x;
@@ -259,20 +281,6 @@ export class SimulacaoInicialComponent implements OnInit {
 
   public mudarAlimentoGeradoPorVez(numero: number) {
     this._alimentosGeradosPorVez = numero;
-  }
-
-  public mudarVelocidadeSimulacao(multiplicadorDeVelocidade: number) {
-    this.multiplicadorDeVelocidade = multiplicadorDeVelocidade;
-
-    this.walkers.forEach((walker) => {
-      walker.multiplicadorDeVelocidade = multiplicadorDeVelocidade;
-    });
-
-    clearInterval(this._intervalAlimento);
-    this._intervalAlimento = setInterval(() => {
-      if (this.alimentos.length < this._alimentosGeradosPorVez)
-        this.gerarAlimentos();
-    }, 50000 / this.multiplicadorDeVelocidade);
   }
 
   // colocarPassosPraTodos(numeroDePassos: number) {

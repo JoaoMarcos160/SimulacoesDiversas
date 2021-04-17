@@ -29,7 +29,9 @@ export class WalkerComponent implements OnInit {
         this.walker.causaDaMorte !== 'Ainda vivo'
           ? '3px solid black'
           : this.walker.prontoParaReproduzir
-          ? '2px solid red'
+          ? this.walker.sexo
+            ? '2px solid blue'
+            : '2px solid red'
           : '',
     };
   }
