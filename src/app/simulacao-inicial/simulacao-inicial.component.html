@@ -1,5 +1,24 @@
-<div class="fundo ocupar-tudo" (click)="fecharCard()">
+<div
+  [ngClass]="{
+    'ocupar-tudo': true,
+    'fundo-dark': usarDarkMode,
+    fundo: !usarDarkMode
+  }"
+  (click)="fecharCard()"
+>
   <div class="div-tabelas">
+    <app-dado-simples
+      [tituloDado]="'Total de indivíduos: '"
+      [dado]="totalWalkersQueJaExixtiram"
+    ></app-dado-simples>
+    <app-dado-simples
+      [tituloDado]="'Total de indivíduos vivos: '"
+      [dado]="totalWalkersVivos"
+    ></app-dado-simples>
+    <app-dado-simples
+      [tituloDado]="'Tempo em segundos: '"
+      [dado]="tempoEmSegundos"
+    ></app-dado-simples>
     <button *ngIf="mostrarTabelas" (click)="inverterMostrarTabelas()">
       Fechar tabelas
     </button>
@@ -7,18 +26,6 @@
       Abrir tabelas
     </button>
     <div class="tabela-lateral" *ngIf="mostrarTabelas">
-      <app-dado-simples
-        [tituloDado]="'Total de indivíduos: '"
-        [dado]="totalWalkersQueJaExixtiram"
-      ></app-dado-simples>
-      <app-dado-simples
-        [tituloDado]="'Total de indivíduos vivos: '"
-        [dado]="totalWalkersVivos"
-      ></app-dado-simples>
-      <app-dado-simples
-        [tituloDado]="'Tempo em segundos: '"
-        [dado]="tempoEmSegundos"
-      ></app-dado-simples>
       <app-dado-simples
         [tituloDado]="'Tamanho da tela no eixo X: '"
         [dado]="totalEixoX"
@@ -36,6 +43,31 @@
         [dado]="alimentos.length"
       ></app-dado-simples>
 
+      <!--TO DO: criar um componente especifico para essa combo-box-->
+      <div class="div-combo">
+        <label>Propriedades para observar na tabela</label><br />
+        <select (change)="mudarPropriedadeSelecionada($event)">
+          <option
+            *ngFor="let item of propriedadesPossiveis"
+            [value]="item.chave + '/&*' + item.valor"
+          >
+            {{ item.chave }}
+          </option>
+        </select>
+      </div>
+      <app-tabela-simples
+        [titulo]="propriedadeSelecionada.chave"
+        [textField]="'id'"
+        [valueField]="propriedadeSelecionada.valor"
+        [usarValueFieldComoCor]="
+          propriedadeSelecionada.valor === 'corDaBorda' ||
+          propriedadeSelecionada.valor === 'corInicial' ||
+          propriedadeSelecionada.valor === 'tipoAlimentoPreferidoString'
+        "
+        [dados]="walkers"
+        [total]="totalWalkersVivos"
+      ></app-tabela-simples>
+
       <app-tabela-simples
         [titulo]="'Tamanhos'"
         [textField]="'Tamanho'"
@@ -44,45 +76,10 @@
         [total]="totalWalkersVivos"
       ></app-tabela-simples>
       <app-tabela-simples
-        [titulo]="'Longevidade'"
-        [textField]="'id'"
-        [valueField]="'longevidade'"
-        [dados]="walkers"
-        [total]="totalWalkersVivos"
-      ></app-tabela-simples>
-      <app-tabela-simples
-        [titulo]="'Ciclos'"
-        [textField]="'id'"
-        [valueField]="'numeroDeCiclos'"
-        [dados]="walkers"
-        [total]="totalWalkersVivos"
-      ></app-tabela-simples>
-      <app-tabela-simples
-        [titulo]="'Alimentação'"
-        [textField]="'id'"
-        [valueField]="'alimentacao'"
-        [dados]="walkers"
-        [total]="totalWalkersVivos"
-      ></app-tabela-simples>
-      <app-tabela-simples
-        [titulo]="'Força de vontade'"
-        [textField]="'id'"
-        [valueField]="'forcaDeVontade'"
-        [dados]="walkers"
-        [total]="totalWalkersVivos"
-      ></app-tabela-simples>
-      <app-tabela-simples
         [titulo]="'Sexos'"
         [textField]="'Sexo'"
         [valueField]="'Quantidade'"
         [dados]="sexos"
-        [total]="totalWalkersVivos"
-      ></app-tabela-simples>
-      <app-tabela-simples
-        [titulo]="'Reprodução'"
-        [textField]="'id'"
-        [valueField]="'vontadeDeReproducao'"
-        [dados]="walkers"
         [total]="totalWalkersVivos"
       ></app-tabela-simples>
       <app-tabela-simples
@@ -95,27 +92,74 @@
     </div>
   </div>
   <div class="div-comandos">
-    <app-slider
-      [valorMax]="totalWalkersVivos * 10"
-      [valorMin]="totalWalkersVivos / 10"
-      [valorAtual]="alimentosGeradosPorVez"
-      [label]="'Quantidade de Alimento Gerado por vez'"
-      (onChange)="mudarAlimentoGeradoPorVez($event)"
-    ></app-slider>
-    <app-slider
-      [valorMax]="5"
-      [valorMin]="1"
-      [valorAtual]="velocidadeSimulacao"
-      [label]="'Velocidade'"
-      (onChange)="mudarVelocidadeSimulacao($event)"
-    ></app-slider>
+    <button
+      class="botao-config"
+      *ngIf="!mostrarConfiguracoes"
+      (click)="inverterMostrarConfiguracoes()"
+    >
+      Abrir configurações
+    </button>
+    <button
+      class="botao-config"
+      *ngIf="mostrarConfiguracoes"
+      (click)="inverterMostrarConfiguracoes()"
+    >
+      Fechar configurações
+    </button>
+    <div *ngIf="mostrarConfiguracoes">
+      <app-slider
+        [valorMax]="totalWalkersVivos * 10"
+        [valorMin]="1"
+        [valorAtual]="alimentosGeradosPorVez"
+        [label]="'Quantidade de Alimento Gerado por vez'"
+        (onChange)="mudarAlimentoGeradoPorVez($event)"
+      ></app-slider>
+      <app-slider
+        [valorMax]="5"
+        [valorMin]="1"
+        [valorAtual]="velocidadeSimulacao"
+        [label]="'Velocidade'"
+        (onChange)="mudarVelocidadeSimulacao($event)"
+      ></app-slider>
+
+      <button
+        class="botao-config"
+        *ngIf="!usarDarkMode"
+        (click)="inverterUsarDarkmode()"
+      >
+        Usar Dark Mode
+      </button>
+      <button
+        class="botao-config"
+        *ngIf="usarDarkMode"
+        (click)="inverterUsarDarkmode()"
+      >
+        Usar Light Mode
+      </button>
+
+      <button
+        class="botao-config"
+        *ngIf="!mostrarId"
+        (click)="inverterMostrarId()"
+      >
+        Mostrar Id's
+      </button>
+      <button
+        class="botao-config"
+        *ngIf="mostrarId"
+        (click)="inverterMostrarId()"
+      >
+        Esconder Id's
+      </button>
+    </div>
   </div>
   <app-walker
     *ngFor="let walker of walkers"
     [walker]="walker"
+    [mostrarId]="mostrarId"
+    [darkMode]="usarDarkMode"
     (mouseenter)="atualizarCard(walker)"
   ></app-walker>
-  <!-- (onClick)="trocarCorDeFundoEFazerAcao(walker, $event)" -->
   <app-card-walker
     *ngIf="dadosCard != null"
     [walker]="dadosCard"

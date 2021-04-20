@@ -11,6 +11,7 @@ export class TabelaSimplesComponent implements OnInit {
   @Input() valueField: string | number = '';
   @Input() dados: { [key: string]: any }[] = [];
   @Input() total: number = 0;
+  @Input() usarValueFieldComoCor: boolean = false;
 
   public expandido: boolean = false;
   public direcaoOrganizacaoTextField: boolean = false;
@@ -38,14 +39,35 @@ export class TabelaSimplesComponent implements OnInit {
   }
 
   organizarPorValueField() {
-    if (this.direcaoOrganizacaoValueField) {
-      this.dados = this.dados.sort((a, b) => {
-        return a[this.valueField] - b[this.valueField];
-      });
+    //se for string ele ordena por ordem alfabética
+    if (typeof this.valueField === 'string') {
+      if (this.direcaoOrganizacaoValueField) {
+        this.dados = this.dados.sort((a, b) => {
+          return a[this.valueField] > b[this.valueField]
+            ? 1
+            : b[this.valueField] > a[this.valueField]
+            ? -1
+            : 0;
+        });
+      } else {
+        this.dados = this.dados.sort((a, b) => {
+          return b[this.valueField] > a[this.valueField]
+            ? 1
+            : a[this.valueField] > b[this.valueField]
+            ? -1
+            : 0;
+        });
+      }
     } else {
-      this.dados = this.dados.sort((a, b) => {
-        return b[this.valueField] - a[this.valueField];
-      });
+      if (this.direcaoOrganizacaoValueField) {
+        this.dados = this.dados.sort((a, b) => {
+          return a[this.valueField] - b[this.valueField];
+        });
+      } else {
+        this.dados = this.dados.sort((a, b) => {
+          return b[this.valueField] - a[this.valueField];
+        });
+      }
     }
     this.direcaoOrganizacaoValueField = !this.direcaoOrganizacaoValueField;
   }

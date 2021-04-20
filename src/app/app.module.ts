@@ -12,6 +12,7 @@ import { AlimentoComponent } from './alimento/alimento.component';
 import { CardWalkerComponent } from './card-walker/card-walker.component';
 import { DadoSimplesComponent } from './componentes/dado-simples/dado-simples.component';
 import { SliderComponent } from './componentes/slider/slider.component';
+import { FormsModule } from '@angular/forms';
 
 @NgModule({
   declarations: [
@@ -24,13 +25,10 @@ import { SliderComponent } from './componentes/slider/slider.component';
     AlimentoComponent,
     CardWalkerComponent,
     DadoSimplesComponent,
-    SliderComponent
+    SliderComponent,
   ],
-  imports: [
-    BrowserModule,
-    AppRoutingModule
-  ],
+  imports: [BrowserModule, AppRoutingModule],
   providers: [],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
 })
-export class AppModule { }
+export class AppModule {}

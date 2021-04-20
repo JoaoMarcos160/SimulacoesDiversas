@@ -28,7 +28,11 @@
         <td>
           {{ item[textField] }}
         </td>
-        <td>{{ item[valueField] }}</td>
+        <td *ngIf="!usarValueFieldComoCor">{{ item[valueField] }}</td>
+        <td
+          *ngIf="usarValueFieldComoCor"
+          [ngStyle]="{ 'background-color': item[valueField] }"
+        ></td>
       </tr>
     </tbody>
     <tfoot class="foot">

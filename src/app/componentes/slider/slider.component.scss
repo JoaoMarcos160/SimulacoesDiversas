@@ -3,6 +3,14 @@
   flex-direction: row;
   width: 90%; /* Width of the outside container */
   margin: 15px;
+  z-index: 150;
+  position: relative;
+  height: fit-content;
+  background-color: #eeeeeecc;
+  border-radius: 3px;
+  padding: 5px;
+  border: 1px solid black;
+  text-align: start;
 }
 
 .label {
@@ -28,6 +36,7 @@
   width: 25px;
   height: 25px;
   border-radius: 50%;
+  border: solid rgb(0, 102, 0) 1px;
   background: #4caf50;
   cursor: pointer;
 }
@@ -36,6 +45,7 @@
   width: 25px;
   height: 25px;
   border-radius: 50%;
+  border: solid rgb(0, 102, 0) 1px;
   background: #4caf50;
   cursor: pointer;
 }

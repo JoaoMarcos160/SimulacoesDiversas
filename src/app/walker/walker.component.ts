@@ -8,11 +8,11 @@ import { Walker } from '../classes/Walker';
 })
 export class WalkerComponent implements OnInit {
   @Input() walker: Walker = <Walker>{};
-  @Input() mostraNome: boolean = true;
+  @Input() mostrarId: boolean = true;
+  @Input() darkMode: boolean = false;
 
-  @Output() onClick = new EventEmitter<{ cor: string; x: number; y: number }>();
+  // @Output() onClick = new EventEmitter<{ cor: string; x: number; y: number }>();
 
-  private distanciaId = this.walker.tamanho / 2;
   constructor() {}
 
   ngOnInit(): void {}
@@ -39,17 +39,18 @@ export class WalkerComponent implements OnInit {
   getStyleId() {
     return {
       position: 'absolute',
+      color: this.darkMode ? 'white' : 'black',
       bottom: this.walker.y + this.walker.tamanho * 2 + 'px',
       'margin-left': (this.walker.x + this.walker.tamanho).toString() + 'px',
     };
   }
 
-  trocarCor(evento: any) {
-    let obj = {
-      cor: '#000000',
-      x: evento.x,
-      y: evento.y,
-    };
-    this.onClick.emit(obj);
-  }
+  // trocarCor(evento: any) {
+  //   let obj = {
+  //     cor: '#000000',
+  //     x: evento.x,
+  //     y: evento.y,
+  //   };
+  //   this.onClick.emit(obj);
+  // }
 }

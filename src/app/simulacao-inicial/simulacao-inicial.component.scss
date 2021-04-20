@@ -7,7 +7,7 @@
 .fundo-dark {
   position: relative;
   margin: 5px;
-  background-color: grey;
+  background-color: rgb(20, 20, 20);
 }
 
 .div-tabelas {
@@ -18,10 +18,37 @@
 }
 
 .div-comandos {
+  z-index: 150;
   position: absolute;
   height: fit-content;
   width: fit-content;
   left: auto;
   right: 0px;
+  padding: 5px;
+  text-align: end;
+}
+
+.div-combo {
+  z-index: 150;
+  background-color: #eeeeeecc;
   margin: 5px;
+  border-radius: 3px;
+  padding: 5px;
+  border: 1px solid black;
+  text-align: center;
+  font-size: large;
+}
+
+button {
+  z-index: inherit;
+  margin: 5px;
+  font-size: medium;
+}
+
+.botao-config {
+  z-index: inherit;
+  margin-right: 5px;
+  margin-left: auto;
+  font-size: medium;
+  margin-right: 20px;
 }

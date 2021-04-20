@@ -19,14 +19,6 @@
         <td>{{ walker.corDaBorda }}</td>
       </tr>
       <tr>
-        <td>Posição X</td>
-        <td>{{ walker.x }}</td>
-      </tr>
-      <tr>
-        <td>Posição Y</td>
-        <td>{{ walker.y }}</td>
-      </tr>
-      <tr>
         <td>Força de vontade</td>
         <td>{{ walker.forcaDeVontade }}</td>
       </tr>
@@ -59,12 +51,8 @@
         <td>{{ walker.passosArmazenados }}</td>
       </tr>
       <tr>
-        <td>Ultimo Passo</td>
-        <td>{{ getUltimoPasso() }}</td>
-      </tr>
-      <tr>
         <td>Sexo</td>
-        <td>{{ walker.sexo ? "Macho" : "Fêmea" }}</td>
+        <td>{{ walker.sexoString }}</td>
       </tr>
       <tr>
         <td>Velocidade de reprodução</td>
@@ -81,6 +69,18 @@
       <tr>
         <td>Causa da Morte</td>
         <td>{{ walker.causaDaMorte }}</td>
+      </tr>
+      <tr>
+        <td>Id do pai</td>
+        <td>{{ walker.paiId }}</td>
+      </tr>
+      <tr>
+        <td>Id do mãe</td>
+        <td>{{ walker.maeId }}</td>
+      </tr>
+      <tr>
+        <td>Tipo alimento preferido</td>
+        <td>{{ walker.tipoaAlimentoPreferido }}</td>
       </tr>
       <tr>
         <td>Status</td>

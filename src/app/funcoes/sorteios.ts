@@ -25,11 +25,11 @@ export function sortearTipoAlimento(): AlimentoTipo {
  * @returns Sorteia uma direcao tendo como base os ultimos passos dados
  */
 export function sortearDirecao(ultimosPassosDados: Passo[]): Direcao {
-  if (ultimosPassosDados.length > 3) {
-    let penultimo = ultimosPassosDados[ultimosPassosDados.length - 2].direcao;
-    let antipenultimo =
-      ultimosPassosDados[ultimosPassosDados.length - 3].direcao;
-  }
+  // if (ultimosPassosDados.length > 3) {
+  //   let penultimo = ultimosPassosDados[ultimosPassosDados.length - 2].direcao;
+  //   let antipenultimo =
+  //     ultimosPassosDados[ultimosPassosDados.length - 3].direcao;
+  // }
   if (ultimosPassosDados.length > 0) {
     let ultimo = ultimosPassosDados[ultimosPassosDados.length - 1].direcao;
     let possiveisDirecoes: Direcao[];

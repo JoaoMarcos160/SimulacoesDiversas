@@ -25,11 +25,7 @@ import {
 export class SimulacaoInicialComponent implements OnInit {
   constructor(private route: ActivatedRoute) {}
 
-  private _alimentosGeradosPorVez: number = this.getParametroRotaNumeroDeIndividuos();
-  public get alimentosGeradosPorVez(): number {
-    return this._alimentosGeradosPorVez;
-  }
-
+  public alimentosGeradosPorVez: number = this.getParametroRotaNumeroDeIndividuos();
   private _totalAlimentoGerado: number = 0;
   private _timeOut: any;
   private _flagGerarAlimentosX: boolean = true;
@@ -40,15 +36,48 @@ export class SimulacaoInicialComponent implements OnInit {
   public walkers: Walker[] = [];
   public walkersMortos: Walker[] = [];
   public tempoEmSegundos: number = 0;
-  public tamanhosWalkers: any[] = [];
   public alimentos: Alimento[] = [];
   public dadosCard: Walker | null = null;
   public propriedadesWalker: string[] = [];
   public velocidadeSimulacao: number = 1;
-
   public multiplicadorDeVelocidade: number = 1;
 
   public mostrarTabelas: boolean = true;
+  public mostrarConfiguracoes: boolean = true;
+  public mostrarId: boolean = true;
+  public usarDarkMode: boolean = false;
+  public propriedadeSelecionada: { chave: string; valor: string } = {
+    chave: 'Velocidade',
+    valor: 'velocidade',
+  };
+  public propriedadesPossiveis: { chave: string; valor: string }[] = [
+    { chave: 'Cor da Borda', valor: 'corDaBorda' },
+    { chave: 'Cor Inicial', valor: 'corInicial' },
+    { chave: 'Tamanho', valor: 'tamanho' },
+    { chave: 'Força de vontade', valor: 'forcaDeVontade' },
+    { chave: 'Tamanho do passo', valor: 'tamanhoDoPasso' },
+    { chave: 'Coordenada X', valor: 'x' },
+    { chave: 'Coordenada Y', valor: 'y' },
+    { chave: 'Quantidade alimento comido', valor: 'qtdAlimentoComido' },
+    { chave: 'Número de ciclos', valor: 'numeroDeCiclos' },
+    { chave: 'Alimentação', valor: 'alimentacao' },
+    { chave: 'Último passo', valor: 'ultimoPasso' },
+    { chave: 'Quantidade de passos armazenados', valor: 'passosArmazenados' },
+    { chave: 'Sexo', valor: 'sexoString' },
+    { chave: 'Vontade de reprodução', valor: 'vontadeDeReproducao' },
+    { chave: 'Pronto para se reproduzir', valor: 'prontoParaReproduzir' },
+    {
+      chave: 'Multiplicador de velocidade',
+      valor: 'multiplicadorDeVelocidade',
+    },
+    { chave: 'Velocidade', valor: 'velocidade' },
+    { chave: 'Velocidade de reprodução', valor: 'velocidadeReproducao' },
+    { chave: 'Causa da Morte', valor: 'causaDaMorte' },
+    { chave: 'Longevidade', valor: 'longevidade' },
+    { chave: 'Status', valor: 'status' },
+    { chave: 'Número de filhos', valor: 'numeroDeFilhos' },
+    { chave: 'Tipo de alimento preferido', valor: 'tipoAlimentoPreferidoString' },
+  ];
 
   public get totalWalkersQueJaExixtiram(): number {
     return this.walkers.length + this.walkersMortos.length;
@@ -56,9 +85,6 @@ export class SimulacaoInicialComponent implements OnInit {
 
   public get totalWalkersVivos(): number {
     return this.walkers.length;
-    // return this.walkers.filter((elemento) => {
-    //   return elemento.causaDaMorte == 'Ainda vivo';
-    // }).length;
   }
 
   public get totalWalkerMortos(): number {
@@ -77,10 +103,20 @@ export class SimulacaoInicialComponent implements OnInit {
     return this._totalAlimentoGerado;
   }
 
+  public get tamanhosWalkers(): any[] {
+    return calcularQuantidadeArray(
+      this.walkers.map((element) => {
+        return element.tamanho;
+      }),
+      '',
+      'Tamanho'
+    );
+  }
+
   public get sexos(): any[] {
     return calcularQuantidadeArray(
       this.walkers.map((elemento) => {
-        return elemento.sexo ? 'Macho' : 'Fêmea';
+        return elemento.sexoString;
       }),
       '',
       'Sexo'
@@ -108,16 +144,13 @@ export class SimulacaoInicialComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    //ordena as propriedades em ordem alfabética
+    this.propriedadesPossiveis.sort((a, b) => {
+      return a.chave > b.chave ? 1 : b.chave > a.chave ? -1 : 0;
+    });
+    this.propriedadeSelecionada = { ...this.propriedadesPossiveis[0] };
     this.velocidadeSimulacao = 1;
     this.gerarWalkers();
-
-    this.tamanhosWalkers = calcularQuantidadeArray(
-      this.walkers.map((element) => {
-        return element.tamanho;
-      }),
-      '',
-      'Tamanho'
-    );
     this.loop();
   }
 
@@ -159,6 +192,9 @@ export class SimulacaoInicialComponent implements OnInit {
           sortearSexo(),
           sortearVelocidadeDeReproducao(),
           sortearLongevidade(),
+          0, //Id do pai
+          0, //Id da mãe
+          sortearTipoAlimento(),
           this.alimentos,
           this.walkers,
           this.walkersMortos
@@ -168,37 +204,37 @@ export class SimulacaoInicialComponent implements OnInit {
   }
 
   gerarAlimentos() {
-    if (this._flagGerarAlimentosX && this._flagGerarAlimentosY) {
-      this._flagGerarAlimentosY = false;
-    } else if (this._flagGerarAlimentosX && !this._flagGerarAlimentosY) {
-      this._flagGerarAlimentosX = false;
-      this._flagGerarAlimentosY = false;
-    } else if (!this._flagGerarAlimentosX && !this._flagGerarAlimentosY) {
-      this._flagGerarAlimentosY = true;
-    } else {
-      this._flagGerarAlimentosX = true;
-      this._flagGerarAlimentosY = true;
-    }
-
-    for (let i = 0; i < this._alimentosGeradosPorVez; i++) {
+    this._flagGerarAlimentosX = !this._flagGerarAlimentosX;
+    for (let i = 0; i < this.alimentosGeradosPorVez; i++) {
       this.alimentos.push(
         new Alimento(
           this._flagGerarAlimentosX
             ? Math.trunc(
                 Math.min(
-                  randn_bm() * (this.totalEixoX / 8) + this.totalEixoX / 2,
+                  Math.abs(randn_bm() * (this.totalEixoX / 8)) +
+                    this.totalEixoX / 2,
                   this.totalEixoX * 0.95
                 )
               )
-            : getRandomInt(50, this.totalEixoX / 2),
-          this._flagGerarAlimentosY
-            ? Math.trunc(
+            : Math.trunc(
                 Math.min(
-                  randn_bm() * (this.totalEixoY / 8) + this.totalEixoY / 2,
-                  this.totalEixoY * 0.95
+                  Math.abs(randn_bm() * (this.totalEixoX / 8)),
+                  this.totalEixoX * 0.95
                 )
-              )
-            : getRandomInt(50, this.totalEixoY / 2),
+              ),
+          Math.trunc(
+            Math.min(
+              randn_bm() * (this.totalEixoY / 8) + this.totalEixoY / 2,
+              this.totalEixoY * 0.95
+            )
+          ),
+          // nesse formato abaixo ele cria por quadrantes num plano cartesiano
+          // this._flagGerarAlimentosX
+          //   ? getRandomInt(10, this.totalEixoX / 2)
+          //   : getRandomInt(this.totalEixoX / 2, this.totalEixoX),
+          // this._flagGerarAlimentosY
+          //   ? getRandomInt(10, this.totalEixoY / 2)
+          //   : getRandomInt(this.totalEixoY / 2, this.totalEixoY),
           sortearTipoAlimento()
         )
       );
@@ -226,7 +262,7 @@ export class SimulacaoInicialComponent implements OnInit {
 
     clearInterval(this._intervalAlimento);
     this._intervalAlimento = setInterval(() => {
-      if (this.alimentos.length < this._alimentosGeradosPorVez) {
+      if (this.alimentos.length < this.alimentosGeradosPorVez) {
         this.gerarAlimentos();
       }
     }, 25000 / this.multiplicadorDeVelocidade);
@@ -247,19 +283,19 @@ export class SimulacaoInicialComponent implements OnInit {
   //   }, 5000);
   // }
 
-  private async ruidoDePerlin(x = 0.0, y = 0.0, incremento = 0.01) {
-    var xoff = x;
-    for (var x = 0; x < 100; x++) {
-      var yoff = y;
-      for (var y = 0; y < 50; y++) {
-        // var bright = map(noise(xoff, yoff), 0, 1, 0, 255);
-        console.log('xoff: ' + xoff.toFixed(2) + ' yoff: ' + yoff.toFixed(2));
-        await sleep(100);
-        yoff += incremento;
-      }
-      xoff += incremento;
-    }
-  }
+  // private async ruidoDePerlin(x = 0.0, y = 0.0, incremento = 0.01) {
+  //   var xoff = x;
+  //   for (var x = 0; x < 100; x++) {
+  //     var yoff = y;
+  //     for (var y = 0; y < 50; y++) {
+  //       // var bright = map(noise(xoff, yoff), 0, 1, 0, 255);
+  //       console.log('xoff: ' + xoff.toFixed(2) + ' yoff: ' + yoff.toFixed(2));
+  //       await sleep(100);
+  //       yoff += incremento;
+  //     }
+  //     xoff += incremento;
+  //   }
+  // }
 
   public atualizarCard(walker: Walker) {
     this.dadosCard = walker;
@@ -278,9 +314,25 @@ export class SimulacaoInicialComponent implements OnInit {
   public inverterMostrarTabelas(): void {
     this.mostrarTabelas = !this.mostrarTabelas;
   }
+  public inverterMostrarConfiguracoes(): void {
+    this.mostrarConfiguracoes = !this.mostrarConfiguracoes;
+  }
+  public inverterUsarDarkmode(): void {
+    this.usarDarkMode = !this.usarDarkMode;
+  }
+  public inverterMostrarId(): void {
+    this.mostrarId = !this.mostrarId;
+  }
 
   public mudarAlimentoGeradoPorVez(numero: number) {
-    this._alimentosGeradosPorVez = numero;
+    this.alimentosGeradosPorVez = numero;
+  }
+
+  public mudarPropriedadeSelecionada(evento: any) {
+    this.propriedadeSelecionada = {
+      chave: evento.target.value.split('/&*')[0],
+      valor: evento.target.value.split('/&*')[1],
+    };
   }
 
   // colocarPassosPraTodos(numeroDePassos: number) {

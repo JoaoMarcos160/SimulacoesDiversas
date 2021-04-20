@@ -1,3 +1,4 @@
+import { AlimentoTipo } from '../enums/AlimentoTipoEnum';
 import { CausaDaMorte } from '../enums/CausaDaMorteEnum';
 import { Direcao } from '../enums/DirecaoEnum';
 import { StatusWalker } from '../enums/StatusWalker';
@@ -37,6 +38,7 @@ import { Passo } from './Passo';
  */
 
 export class Walker {
+  //Propriedades compartilhadas
   private static alimentos: Alimento[];
   private static walkers: Walker[];
   private static walkersMortos: Walker[];
@@ -59,13 +61,15 @@ export class Walker {
   private _status: StatusWalker = StatusWalker.ProcurandoComida;
   private _multiplicadorDeVelocidade: number = 1;
   private _corInicial: string = 'rgb(0,0,0)';
-
   /**
    * Tempo em milisegundos para ele andar, quanto mais alto mais lento
    */
   private _velocidade: number = 750;
-
+  private _numeroDeFilhos: number = 0;
+  private _paiId: number;
+  private _maeId: number;
   private _interval: any = 0;
+  private _tipoAlimentoPreferido: AlimentoTipo;
 
   //Propriedades públicas
   /**
@@ -145,6 +149,10 @@ export class Walker {
   /**
    * Sexo do walker, podendo ser True para Macho e False para Fêmea
    */
+  public get sexoString(): 'Macho' | 'Fêmea' {
+    return this._sexo ? 'Macho' : 'Fêmea';
+  }
+
   public get sexo(): boolean {
     return this._sexo;
   }
@@ -213,6 +221,7 @@ export class Walker {
     return [
       'Procurando comida',
       'Indo até o alimento',
+      'Procurando parceiro',
       'Indo até o parceiro',
       'Morto',
     ][this._status];
@@ -225,6 +234,42 @@ export class Walker {
     return this._corInicial;
   }
 
+  /**
+   * Numero de filhos que o walker já teve
+   */
+  public get numeroDeFilhos(): number {
+    return this._numeroDeFilhos;
+  }
+
+  /**
+   * Id do pai do walker, se for zero ele foi criado pela simulação e não de um acasalamento
+   */
+  public get paiId(): number {
+    return this._paiId;
+  }
+  /**
+   * Id da mãe do walker, se for zero ele foi criado pela simulação e não de um acasalamento
+   */
+  public get maeId(): number {
+    return this._maeId;
+  }
+
+  public get tipoaAlimentoPreferido(): AlimentoTipo {
+    return this._tipoAlimentoPreferido;
+  }
+
+  public get tipoAlimentoPreferidoString(): string {
+    return [
+      'aqua',
+      'red',
+      'green',
+      'darkblue',
+      'yellow',
+      'black',
+      'pink',
+      'blueviolet',
+    ][this.tipoaAlimentoPreferido - 1];
+  }
   //Fim dos Getters
 
   constructor(
@@ -239,6 +284,9 @@ export class Walker {
     sexo: boolean,
     velocidadeDeReproducao: number,
     longevidade: number,
+    paiId: number,
+    maeId: number,
+    tipoAlimentoPreferido: AlimentoTipo,
     alimentos: Alimento[],
     walkers: Walker[],
     walkerMortos: Walker[]
@@ -258,6 +306,9 @@ export class Walker {
     this._sexo = sexo;
     this._velocidadeReproducao = velocidadeDeReproducao;
     this._longevidade = longevidade;
+    this._paiId = paiId;
+    this._maeId = maeId;
+    this._tipoAlimentoPreferido = tipoAlimentoPreferido;
   }
 
   /**
@@ -271,7 +322,7 @@ export class Walker {
       if (this.passosArmazenados === 0) {
         if (this.prontoParaReproduzir) {
           //fêmeas ficam paradas
-          if (!this.sexo) {
+          if (!this._sexo) {
             this.acrescentarPassos(Direcao.Cima, 0);
             this._status = StatusWalker.IndoAteParceiro;
           } else {
@@ -279,37 +330,18 @@ export class Walker {
               Walker.walkers
             );
             if (retornoWalker) {
-              if (
-                Math.round(retornoWalker.distancia) <
-                this.forcaDeVontade * 5
-              ) {
+              this._parceiroSendoBuscado = retornoWalker.walker;
+              if (Math.round(retornoWalker.distancia) < this.forcaDeVontade) {
                 this._x = retornoWalker.walker.x;
                 this._y = retornoWalker.walker.y;
                 //acasalamento aqui
-                //dança do acasalamento
-                let flag = true;
-                for (let i = 0; i < 20; i++) {
-                  if (flag) {
-                    flag = !flag;
-                    this.acrescentarPassos(Direcao.Direita, 20);
-                  } else {
-                    flag = !flag;
-                    this.acrescentarPassos(Direcao.Esquerda, 20);
-                  }
-                }
                 this.acasalar(retornoWalker.walker);
+              } else {
+                this.passosParaUmaCoordenada({
+                  x: retornoWalker.walker.x,
+                  y: retornoWalker.walker.y,
+                });
               }
-              this._parceiroSendoBuscado = retornoWalker.walker;
-              console.log(
-                this.id +
-                  ' encontrou como parceiro a ' +
-                  retornoWalker.walker.id
-              );
-
-              this.passosParaUmaCoordenada({
-                x: retornoWalker.walker.x,
-                y: retornoWalker.walker.y,
-              });
               this._status = StatusWalker.IndoAteParceiro;
             } else {
               //caso não encontre nenhum parceiro
@@ -317,7 +349,7 @@ export class Walker {
                 sortearDirecao(this._ultimosPassosDados),
                 this.tamanhoDoPasso
               );
-              this._status = StatusWalker.ProcurandoComida;
+              this._status = StatusWalker.ProcurandoParceiro;
             }
           }
         } else if (Walker.alimentos.length > 0) {
@@ -328,7 +360,7 @@ export class Walker {
             this.comer(retornoAlimento.alimento, Walker.alimentos);
           }
           //isso aqui faz eles não irem atrás de alimentos muito longe
-          if (retornoAlimento.distancia < this.forcaDeVontade * 8) {
+          if (retornoAlimento.distancia < this.forcaDeVontade * 10) {
             this._alimentoSendoBuscado = retornoAlimento.alimento;
             this.passosParaUmaCoordenada({
               x: retornoAlimento.alimento.x,
@@ -352,8 +384,9 @@ export class Walker {
           this._status = StatusWalker.ProcurandoComida;
         }
       } else {
-        //valida se o alimento que eles estão indo atrás ainda existe, ou seja, nenhum outro cmeu antes deles
-        //isso tambpem faz que eles não fiquem indo em coordenadas que os alimentos nem existem mais
+        //valida se o alimento que eles estão indo atrás ainda existe, ou seja, nenhum outro comeu antes deles
+        //isso tambem faz que eles não fiquem indo em coordenadas que os alimentos nem existem mais
+        //Isso também serve para procurar parceiros
         if (
           this._status === StatusWalker.IndoAteAlimento &&
           !this.alimentoBuscadoAindaExiste(Walker.alimentos)
@@ -401,7 +434,7 @@ export class Walker {
         clearInterval(this._interval);
         setTimeout(() => {
           this.retirarWalkerDoMapa();
-        }, 10000);
+        }, 10000 / this.multiplicadorDeVelocidade);
       }
       this._numeroDeCiclos++;
     }, this.velocidade);
@@ -555,14 +588,14 @@ export class Walker {
     listaDeAlimentos.splice(listaDeAlimentos.indexOf(alimento), 1);
     this._qtdAlimentoComido++;
     this._alimentacao += Math.round(
-      alimento.tipo * Math.max(window.innerHeight, window.innerWidth) * 0.1
+      alimento.tipo * Math.max(window.innerHeight, window.innerWidth) * 0.08
     );
   }
 
   /**
    *
    * @param alimentos Lista de alimentos dísponíveis
-   * @returns Retorna um alimento perto o suficiente para ir buscá-lo
+   * @returns Retorna um alimento perto o suficiente para ir buscá-lo e dá preferencia para o tipo que o walker mais gosta
    */
   private alimentoMaisProximo(
     alimentos: Alimento[]
@@ -575,12 +608,21 @@ export class Walker {
         alimento: alimentos[i],
         distancia: Math.hypot(alimentos[i].x - this.x, alimentos[i].y - this.y),
       };
+      //esse if aqui garante que ele traga um alimento perto o suficiente e evita da busca varrer por todos os alimentos
+      if (alimentoAtual.distancia < this.forcaDeVontade) {
+        alimentoMenorDistancia = alimentoAtual;
+        break;
+      }
+      //se o alimento for do tipo preferido dele, a distancia poderá sser duas vezes maior que sua força de vontade e ele irá atrás
+      if (
+        alimentoAtual.alimento.tipo === this.tipoaAlimentoPreferido &&
+        alimentoAtual.distancia < this.forcaDeVontade * 10
+      ) {
+        alimentoMenorDistancia = alimentoAtual;
+        break;
+      }
       if (alimentoAtual.distancia < alimentoMenorDistancia.distancia) {
         alimentoMenorDistancia = alimentoAtual;
-      }
-      //esse if aqui garante que ele traga um alimento perto o suficiente e evite de buscar em varrer em todos os alimentos
-      if (Math.round(alimentoAtual.distancia) < this.forcaDeVontade) {
-        break;
       }
       i++;
     } while (i < alimentos.length);
@@ -631,14 +673,14 @@ export class Walker {
       );
 
       if (
-        walker.sexo !== this.sexo &&
+        walker._sexo !== this._sexo &&
         walker.prontoParaReproduzir &&
         walker._causaDaMorte == null
       ) {
-        possiveisParceiros.push({ walker: walker, distancia: distancia });
         if (distancia < this.forcaDeVontade) {
-          break;
+          return { walker: walker, distancia: distancia };
         }
+        possiveisParceiros.push({ walker: walker, distancia: distancia });
       }
     }
     if (possiveisParceiros.length > 0) {
@@ -670,11 +712,12 @@ export class Walker {
   private parceiroBuscadoAindaExiste(walkers: Walker[]): boolean {
     if (this._parceiroSendoBuscado != null) {
       for (let i = 0; i < walkers.length; i++) {
-        const element = walkers[i];
-        if (element.id === this._parceiroSendoBuscado.id) {
-          if (element.prontoParaReproduzir && element.causaDaMorte == null) {
-            return true;
-          }
+        if (
+          walkers[i].id === this._parceiroSendoBuscado.id &&
+          walkers[i].prontoParaReproduzir &&
+          walkers[i]._causaDaMorte == null
+        ) {
+          return true;
         }
       }
     }
@@ -684,57 +727,69 @@ export class Walker {
   /**
    * Quem acasala é sempre o macho, eles são quase como cavalos marinhos
    * Eles podem ter 1 ou mais filhos (mas a grande maioria terá apenas 1 por vez)
-   * @param parceiro Recebe com qual walker ele vai partilhar os genes
+   * @param parceira Recebe com qual walker ele vai partilhar os genes
    */
-  private acasalar(parceiro: Walker): void {
+  private acasalar(parceira: Walker): void {
     //perde alimentação ao se reproduzir
     this._alimentacao -= Math.round(
       Math.max(window.innerHeight, window.innerWidth) * 0.1
     );
+    parceira._alimentacao -= Math.round(
+      Math.max(window.innerHeight, window.innerWidth) * 0.1
+    );
     // sua vontade de se reproduzir vai pra zero após o acasalamento
     this._vontadeDeReproducao = 0;
+    parceira._vontadeDeReproducao = 0;
 
-    let quantidadeDeFilhos = Math.abs(randn_bm());
+    let quantidadeDeFilhos = Math.max(1, Math.round(Math.abs(randn_bm())));
     console.log(
       'Número de filhos entre ' +
         this.id +
         ' e ' +
-        parceiro.id +
+        parceira.id +
         ': ' +
         quantidadeDeFilhos
     );
+    this._numeroDeFilhos += quantidadeDeFilhos;
+    parceira._numeroDeFilhos += quantidadeDeFilhos;
     for (let i = 0; i < quantidadeDeFilhos; i++) {
       Walker.walkers.push(
         new Walker(
-          Walker.walkers.length + 1,
+          Walker.walkers.length + Walker.walkersMortos.length + 1,
           this.x,
           this.y,
-          misturarCoresRGB(0.5, this.corInicial, parceiro.corInicial),
+          misturarCoresRGB(0.5, this.corInicial, parceira.corInicial),
           getRandomInt(
-            Math.min(this.tamanho + parceiro.tamanho),
-            Math.max(this.tamanho + parceiro.tamanho)
+            Math.min(this.tamanho, parceira.tamanho),
+            Math.max(this.tamanho, parceira.tamanho)
           ),
           getRandomInt(
-            Math.min(this._velocidade + parceiro._velocidade),
-            Math.max(this._velocidade + parceiro._velocidade)
+            Math.min(this._velocidade, parceira._velocidade),
+            Math.max(this._velocidade, parceira._velocidade)
           ),
           getRandomInt(
-            Math.min(this.forcaDeVontade + parceiro.forcaDeVontade),
-            Math.max(this.forcaDeVontade + parceiro.forcaDeVontade)
+            Math.min(this.forcaDeVontade, parceira.forcaDeVontade),
+            Math.max(this.forcaDeVontade, parceira.forcaDeVontade)
           ),
           getRandomInt(
-            Math.min(this.tamanhoDoPasso + parceiro.tamanhoDoPasso),
-            Math.max(this.tamanhoDoPasso + parceiro.tamanhoDoPasso)
+            Math.min(this.tamanhoDoPasso, parceira.tamanhoDoPasso),
+            Math.max(this.tamanhoDoPasso, parceira.tamanhoDoPasso)
           ),
           sortearSexo(),
           getRandomInt(
-            Math.min(this.velocidadeReproducao + parceiro.velocidadeReproducao),
-            Math.max(this.velocidadeReproducao + parceiro.velocidadeReproducao)
+            Math.min(this.velocidadeReproducao, parceira.velocidadeReproducao),
+            Math.max(this.velocidadeReproducao, parceira.velocidadeReproducao)
           ),
           getRandomInt(
-            Math.min(this.longevidade + parceiro.longevidade),
-            Math.max(this.longevidade + parceiro.longevidade)
+            Math.min(this.longevidade, parceira.longevidade),
+            Math.max(this.longevidade, parceira.longevidade)
           ),
+          this.id,
+          parceira.id,
+          //sorteia se ele vai gostar do mesmo alimento que o pai ou que a mãe
+          Math.random() > 0.5
+            ? this.tipoaAlimentoPreferido
+            : parceira.tipoaAlimentoPreferido,
           Walker.alimentos,
           Walker.walkers,
           Walker.walkersMortos
