@@ -151,6 +151,9 @@
       >
         Esconder Id's
       </button>
+      <button class="botao-config" (click)="inverterModoPerformatico()">
+        Usar modo performático
+      </button>
     </div>
   </div>
   <app-walker
@@ -158,7 +161,7 @@
     [walker]="walker"
     [mostrarId]="mostrarId"
     [darkMode]="usarDarkMode"
-    (mouseenter)="atualizarCard(walker)"
+    (dblclick)="atualizarCard(walker)"
   ></app-walker>
   <app-card-walker
     *ngIf="dadosCard != null"

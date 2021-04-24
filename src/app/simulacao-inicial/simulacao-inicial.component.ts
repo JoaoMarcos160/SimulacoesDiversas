@@ -29,7 +29,7 @@ export class SimulacaoInicialComponent implements OnInit {
   private _totalAlimentoGerado: number = 0;
   private _timeOut: any;
   private _flagGerarAlimentosX: boolean = true;
-  private _flagGerarAlimentosY: boolean = true;
+  private _modoPerformatico: boolean = true;
 
   private _intervalAlimento: any;
 
@@ -76,7 +76,10 @@ export class SimulacaoInicialComponent implements OnInit {
     { chave: 'Longevidade', valor: 'longevidade' },
     { chave: 'Status', valor: 'status' },
     { chave: 'Número de filhos', valor: 'numeroDeFilhos' },
-    { chave: 'Tipo de alimento preferido', valor: 'tipoAlimentoPreferidoString' },
+    {
+      chave: 'Tipo de alimento preferido',
+      valor: 'tipoAlimentoPreferidoString',
+    },
   ];
 
   public get totalWalkersQueJaExixtiram(): number {
@@ -300,6 +303,8 @@ export class SimulacaoInicialComponent implements OnInit {
   public atualizarCard(walker: Walker) {
     this.dadosCard = walker;
 
+    console.log('test');
+
     clearTimeout(this._timeOut);
 
     this._timeOut = setTimeout(() => {
@@ -308,7 +313,7 @@ export class SimulacaoInicialComponent implements OnInit {
   }
 
   public fecharCard() {
-    this.dadosCard = null;
+    if (this.dadosCard) this.dadosCard = null;
   }
 
   public inverterMostrarTabelas(): void {
@@ -333,6 +338,11 @@ export class SimulacaoInicialComponent implements OnInit {
       chave: evento.target.value.split('/&*')[0],
       valor: evento.target.value.split('/&*')[1],
     };
+  }
+
+  public inverterModoPerformatico() {
+    console.log('Ainda não faz nada');
+    this._modoPerformatico = !this._modoPerformatico;
   }
 
   // colocarPassosPraTodos(numeroDePassos: number) {
