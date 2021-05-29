@@ -13,6 +13,7 @@ import { CardWalkerComponent } from './card-walker/card-walker.component';
 import { DadoSimplesComponent } from './componentes/dado-simples/dado-simples.component';
 import { SliderComponent } from './componentes/slider/slider.component';
 import { FormsModule } from '@angular/forms';
+import { TelaInicialComponent } from './tela-inicial/tela-inicial.component';
 
 @NgModule({
   declarations: [
@@ -26,6 +27,7 @@ import { FormsModule } from '@angular/forms';
     CardWalkerComponent,
     DadoSimplesComponent,
     SliderComponent,
+    TelaInicialComponent,
   ],
   imports: [BrowserModule, AppRoutingModule],
   providers: [],
