@@ -12,8 +12,8 @@ import { AlimentoComponent } from './alimento/alimento.component';
 import { CardWalkerComponent } from './card-walker/card-walker.component';
 import { DadoSimplesComponent } from './componentes/dado-simples/dado-simples.component';
 import { SliderComponent } from './componentes/slider/slider.component';
-import { FormsModule } from '@angular/forms';
-import { TelaInicialComponent } from './tela-inicial/tela-inicial.component';
+import { HomeComponent } from './home/home.component';
+import { SimulacaoUpgradeComponent } from './simulacao-upgrade/simulacao-upgrade.component';
 
 @NgModule({
   declarations: [
@@ -27,7 +27,8 @@ import { TelaInicialComponent } from './tela-inicial/tela-inicial.component';
     CardWalkerComponent,
     DadoSimplesComponent,
     SliderComponent,
-    TelaInicialComponent,
+    HomeComponent,
+    SimulacaoUpgradeComponent,
   ],
   imports: [BrowserModule, AppRoutingModule],
   providers: [],

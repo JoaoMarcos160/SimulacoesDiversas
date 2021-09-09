@@ -1,20 +1,20 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { TelaInicialComponent } from './tela-inicial.component';
+import { SimulacaoUpgradeComponent } from './simulacao-upgrade.component';
 
-describe('TelaInicialComponent', () => {
-  let component: TelaInicialComponent;
-  let fixture: ComponentFixture<TelaInicialComponent>;
+describe('SimulacaoUpgradeComponent', () => {
+  let component: SimulacaoUpgradeComponent;
+  let fixture: ComponentFixture<SimulacaoUpgradeComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ TelaInicialComponent ]
+      declarations: [ SimulacaoUpgradeComponent ]
     })
     .compileComponents();
   });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(TelaInicialComponent);
+    fixture = TestBed.createComponent(SimulacaoUpgradeComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

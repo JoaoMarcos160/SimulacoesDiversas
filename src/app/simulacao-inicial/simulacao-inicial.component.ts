@@ -253,7 +253,7 @@ export class SimulacaoInicialComponent implements OnInit {
   }
 
   /**
-   * Ele sempre passa nessa funçaõ no começo
+   * Ele sempre passa nessa função no começo
    * @param multiplicadorDeVelocidade numero de 1 a 5, sendo que quanto maior mais rápido a simulação irá acontecer
    */
   public mudarVelocidadeSimulacao(multiplicadorDeVelocidade: number) {
