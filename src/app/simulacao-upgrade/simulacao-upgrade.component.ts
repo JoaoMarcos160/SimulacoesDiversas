@@ -7,12 +7,8 @@ import {
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import Boid from '../classes/Boid';
-import {
-  getRandomInt,
-  randn_bm,
-  sortearCorHex,
-  sortearTamanhoDoPasso,
-} from '../funcoes/sorteios';
+import Predator from '../classes/Predator';
+import { getRandomInt, randn_bm, sortearCorHex } from '../funcoes/sorteios';
 
 @Component({
   selector: 'app-simulacao-upgrade',
@@ -34,6 +30,7 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
   public frameRate: number = 0;
   public countFrame: number = 0;
   private boids: Boid[] = [];
+  private predators: Predator[] = [];
   public config: {
     showFrameRate: boolean;
     showId: boolean;
@@ -50,8 +47,8 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
     console.log('ngAfterViewInit');
     this.context = this.canvas.nativeElement.getContext('2d');
 
-    //creating soil pattern
     this.createBoids();
+    this.createPredators();
 
     //loop
     this.cycle();
@@ -71,6 +68,20 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
     }
   }
 
+  public createPredators() {
+    for (let i = 0; i <= 15; i++) {
+      this.predators.push(
+        new Predator(
+          i,
+          getRandomInt(1, this.screen.width),
+          getRandomInt(1, this.screen.height),
+          25,
+          '#964b00'
+        )
+      );
+    }
+  }
+
   public cycle() {
     setInterval(() => {
       //clean all canvas
@@ -84,6 +95,13 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
         boid.walk(randn_bm(), randn_bm());
         this.drawBoid(boid);
       });
+
+      //render predators
+      this.predators.forEach((predator) => {
+        predator.walk(randn_bm(), randn_bm());
+        this.drawPredator(predator);
+      });
+
       this.countFrame++;
     }, this.velocity);
     if (this.config.showFrameRate) {
@@ -96,6 +114,21 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
     this.context.fillRect(boid.x, boid.y, boid.size, boid.size);
     if (this.config.showId) {
       this.context.fillText(boid.id.toString(), boid.x, boid.y - 1);
+    }
+  }
+
+  public drawPredator(predator: Predator) {
+    this.context.fillStyle = predator.color;
+    this.context.fillRect(predator.x, predator.y, predator.size, predator.size);
+    this.context.strokeStyle = '#0d0d0d';
+    this.context.strokeRect(
+      predator.x,
+      predator.y,
+      predator.size,
+      predator.size
+    );
+    if (this.config.showId) {
+      this.context.fillText(predator.id.toString(), predator.x, predator.y - 1);
     }
   }
 
