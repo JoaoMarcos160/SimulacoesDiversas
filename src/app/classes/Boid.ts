@@ -6,6 +6,7 @@ export default class Boid {
   private _size: number;
   private _last_x: number;
   private _last_y: number;
+  private _velocity: number;
 
   public get id(): number {
     return this._id;
@@ -41,16 +42,17 @@ export default class Boid {
     return this._last_y;
   }
 
-  constructor(id: number, x: number, y: number, size: number, color: string) {
+  constructor(id: number, x: number, y: number, size: number, color: string, velocity: number) {
     this._id = id;
     this._x = x;
     this._y = y;
     this._size = size;
     this._color = color;
+    this._velocity = velocity;
   }
 
   public walk(x: number, y: number) {
-    this.x = this.x + x;
-    this.y = this.y + y;
+    this.x = this.x + (x * this._velocity);
+    this.y = this.y + (y * this._velocity);
   }
 }

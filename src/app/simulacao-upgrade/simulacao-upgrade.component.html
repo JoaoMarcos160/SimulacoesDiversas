@@ -1,7 +1,11 @@
-<canvas
-  id="canvas"
-  #canvas
+<img
+  id="imgBackground"
+  src="../../assets/grass.png"
   [width]="screen.width"
   [height]="screen.height"
-></canvas>
-{{ config.showFrameRate ? frameRate + " FPS" : "" }}
+/>
+<canvas id="canvas" #canvas [width]="screen.width" [height]="screen.height">
+</canvas>
+<div>
+  {{ config.showFrameRate ? frameRate + " FPS" : "" }}
+</div>
