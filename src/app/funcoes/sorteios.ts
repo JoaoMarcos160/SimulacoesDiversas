@@ -1,5 +1,6 @@
 import { Passo } from '../classes/Passo';
 import { AlimentoTipo } from '../enums/AlimentoTipoEnum';
+import { ConstructionTypeEnum } from '../enums/ContructionTypeEnum';
 import { Direcao } from '../enums/DirecaoEnum';
 
 //Arquivo com as funções que sorteiam coisas
@@ -231,4 +232,27 @@ export function sortearLongevidade(): number {
  */
 export function sortearVelocidadeDeReproducao(): number {
   return Math.round(Math.abs(randn_bm())) + 5;
+}
+
+/**
+ *
+ * @param contruction type of contruction
+ * @returns width and height for the respective construction
+ */
+export function drawContructionSize(contruction: ConstructionTypeEnum): {
+  width: number;
+  height: number;
+} {
+  const multiplier = Math.round(Math.abs(randn_bm())) + 5;
+  switch (contruction) {
+    case ConstructionTypeEnum.Bush:
+      return { width: 16 * multiplier, height: 9 * multiplier };
+    case ConstructionTypeEnum.Tree:
+      return { width: 12 * multiplier, height: 16 * multiplier };
+    case ConstructionTypeEnum.Rock:
+      return { width: 10 * multiplier, height: 9 * multiplier };
+
+    default:
+      return { width: 0, height: 0 };
+  }
 }
