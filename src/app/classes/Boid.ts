@@ -137,8 +137,7 @@ export default class Boid {
   public tracePathToConstruction(construction: Construction) {
     const dx = this.x - construction.x;
     const dy = this.y - construction.y;
-    const angleRadian = Math.atan2(dy, dx);
-    const angleDegrees = angleRadian * 57.2957795131; //tranform radian em degrees
+    const angleDegrees = Math.atan2(dy, dx) * 57.2957795131;
 
     const angleToBoid = angleDegrees < 0 ? angleDegrees + 360 : angleDegrees;
     const equation = Boid.findEquationOfALine(
