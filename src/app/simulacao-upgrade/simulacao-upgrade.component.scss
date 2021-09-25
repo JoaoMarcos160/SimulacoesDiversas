@@ -2,6 +2,35 @@ canvas {
   border: 1px solid #000;
 }
 
+.container {
+  display: flex;
+}
+
+.div-canvas {
+}
+
+.div-configs {
+  width: fit-content;
+}
+
+.input-configs {
+  margin-top: 0.2em;
+  margin-left: 0.2em;
+  margin-right: 0.2em;
+}
+
+.fps {
+  text-rendering: optimizeSpeed;
+  font-size: large;
+  font-weight: bold;
+}
+
+.data {
+  display: block;
+  flex-direction: column;
+  flex-wrap: wrap;
+}
+
 #imgBackground {
   position: absolute;
   image-rendering: -webkit-optimize-contrast;

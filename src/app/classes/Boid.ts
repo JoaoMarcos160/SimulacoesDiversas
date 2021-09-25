@@ -1,5 +1,5 @@
 import Construction from './Contruction';
-import { Step } from './Step';
+import Step from './Step';
 
 export default class Boid {
   private readonly _id: number;
@@ -137,47 +137,26 @@ export default class Boid {
   public tracePathToConstruction(construction: Construction) {
     const dx = this.x - construction.x;
     const dy = this.y - construction.y;
-    const angleDegrees = Math.atan2(dy, dx) * 57.2957795131;
 
-    const angleToBoid = angleDegrees < 0 ? angleDegrees + 360 : angleDegrees;
-    const equation = Boid.findEquationOfALine(
-      construction.x,
-      construction.y,
-      this.x,
-      this.y
-    );
-    const distance = Math.hypot(dx, dy);
-    const stepsToContruction = distance / this._velocity;
+    const x_inverter = dx < 0 ? 1 : dx > 0 ? -1 : 0;
+    let y_inverter = dy < 0 ? 1 : dy > 0 ? -1 : 0;
 
-    if (angleToBoid < 90 || 270 < angleToBoid) {
-      for (let x = this.x; x > construction.x; x--) {
-        this.addStep(
-          new Step(
-            (x - this.x) / stepsToContruction,
-            (eval(equation) - this.y) / stepsToContruction
-          )
-        );
+    if (x_inverter && x_inverter !== y_inverter) {
+      y_inverter = x_inverter;
+    }
+
+    let stepsToContruction = Math.floor(Math.abs(dx)) / this._velocity;
+
+    if (stepsToContruction < 1) {
+      stepsToContruction = Math.floor(Math.abs(dy)) / this._velocity;
+      for (let i = 0; i < stepsToContruction; i++) {
+        this.addStep(new Step(x_inverter, y_inverter));
       }
     } else {
-      for (let x = this.x; construction.x > x; x++) {
-        this.addStep(
-          new Step(
-            (x - this.x) / stepsToContruction,
-            (eval(equation) - this.y) / stepsToContruction
-          )
-        );
+      const m = dy / dx;
+      for (let i = 0; i < stepsToContruction; i++) {
+        this.addStep(new Step(x_inverter, m * y_inverter));
       }
     }
-  }
-
-  public static findEquationOfALine(
-    x1: number,
-    y1: number,
-    x2: number,
-    y2: number
-  ): string {
-    const m = (y2 - y1) / (x2 - x1);
-    const b = y1 - m * x1;
-    return `${m} * x + ${b}`;
   }
 }

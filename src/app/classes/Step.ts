@@ -1,4 +1,4 @@
-export class Step {
+export default class Step {
   public distance_x: number;
   public distance_y: number;
 

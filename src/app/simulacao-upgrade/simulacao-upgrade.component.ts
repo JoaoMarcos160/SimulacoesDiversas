@@ -5,12 +5,11 @@ import {
   OnInit,
   ViewChild,
 } from '@angular/core';
-import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
 import Boid from '../classes/Boid';
 import Construction from '../classes/Contruction';
 import Predator from '../classes/Predator';
-import { Step } from '../classes/Step';
+import Step from '../classes/Step';
 import { ConstructionTypeEnum } from '../enums/ContructionTypeEnum';
 import {
   drawContructionSize,
@@ -27,10 +26,12 @@ import {
 export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
   @ViewChild('canvas')
   canvas: ElementRef<HTMLCanvasElement>;
+  @ViewChild('txtIdBoid')
+  txtIdBoid: ElementRef<HTMLInputElement>;
 
   public context: CanvasRenderingContext2D;
   public screen: { width: number; height: number } = {
-    width: window.innerWidth * 0.9,
+    width: window.innerWidth * 0.8,
     height: window.innerHeight * 0.9,
   };
   public velocity: number = 0; //quanto menor mais rápido
@@ -42,6 +43,8 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
   private boids: Boid[] = [];
   private predators: Predator[] = [];
   private contructions: Construction[] = [];
+  public watchBoid: Boid = null;
+  public boidKeys: { property: string; label: string }[] = [];
 
   public config: {
     showFrameRate: boolean;
@@ -71,6 +74,7 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
   private keysRight = ['Right', 'ArrowRight', 'D', 'd'];
 
   constructor(private route: ActivatedRoute) {
+    //control boid 1 (black boid)
     document.onkeydown = document.onkeyup = (e) => {
       this.keysStates[e.key] = e.type == 'keydown';
       let x = 0;
@@ -182,6 +186,7 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
   public createConstructions() {
     for (let i = 1; i <= 10; i++) {
       const type: ConstructionTypeEnum = getRandomInt(0, 3);
+      // const type: ConstructionTypeEnum = ConstructionTypeEnum.Tree;
       const size = drawContructionSize(type);
       this.contructions.push(
         Object.seal(
@@ -256,6 +261,27 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
     if (this.config.showFrameRate) {
       this.showFrameRate();
     }
+  }
+
+  public toWatchBoid() {
+    const id = parseInt(this.txtIdBoid.nativeElement.value);
+    this.watchBoid = this.boids.find((boid) => boid.id === id);
+    this.boidKeys = this.extractKeys(this.watchBoid);
+  }
+
+  public extractKeys(boid: Boid): { property: string; label: string }[] {
+    if (!!boid) {
+      return Object.keys(boid)
+        .map((property: string) => {
+          const key = property.replace(/^_/, '');
+          return {
+            property: property,
+            label: `${key.charAt(0).toUpperCase()}${key.substring(1)}`,
+          };
+        })
+        .filter((element) => element.label !== 'Steps');
+    }
+    return [];
   }
 
   public drawBoid(boid: Boid) {

@@ -1,11 +1,86 @@
-<img
-  id="imgBackground"
-  src="../../assets/grass.webp"
-  [width]="screen.width"
-  [height]="screen.height"
-/>
-<canvas id="canvas" #canvas [width]="screen.width" [height]="screen.height">
-</canvas>
-<div>
-  {{ config.showFrameRate ? frameRate + " FPS" : "" }}
+<div class="container">
+  <div class="div-canvas">
+    <img
+      id="imgBackground"
+      src="../../assets/grass.webp"
+      [width]="screen.width"
+      [height]="screen.height"
+    />
+    <canvas id="canvas" #canvas [width]="screen.width" [height]="screen.height">
+    </canvas>
+  </div>
+  <div class="div-configs">
+    <div class="input-configs">
+      <input
+        id="chkShowFrameRate"
+        type="checkbox"
+        (change)="config.showFrameRate = !config.showFrameRate"
+        [checked]="config.showFrameRate"
+      />
+      <label>Show Frame Rate</label>
+      <br />
+    </div>
+    <div class="input-configs">
+      <input
+        id="chkShowGrid"
+        type="checkbox"
+        (change)="config.showGrid = !config.showGrid"
+        [checked]="config.showGrid"
+      />
+      <label>Show Grid</label>
+      <br />
+    </div>
+    <div class="input-configs">
+      <input
+        id="chkShowId"
+        type="checkbox"
+        (change)="config.showId = !config.showId"
+        [checked]="config.showId"
+      />
+      <label>Show Id</label>
+      <br />
+    </div>
+    <div class="input-configs">
+      <input
+        id="chkShowRoutesBoids"
+        type="checkbox"
+        (change)="config.showRoutesBoids = !config.showRoutesBoids"
+        [checked]="config.showRoutesBoids"
+      />
+      <label>Show Route</label>
+      <br />
+    </div>
+    <div class="input-configs">
+      <input
+        id="chkShowRuler"
+        type="checkbox"
+        (change)="config.showRuler = !config.showRuler"
+        [checked]="config.showRuler"
+      />
+      <label>Show Ruler</label>
+      <div class="fps">
+        {{ config.showFrameRate ? frameRate + " FPS" : "" }}
+      </div>
+    </div>
+
+    <div class="input-configs">
+      <input
+        #txtIdBoid
+        id="txtIdBoid"
+        type="number"
+        placeholder="Enter an id"
+        (keyup.enter)="toWatchBoid()"
+      />
+      <button type="submit" (click)="toWatchBoid()">Watch Boid</button>
+    </div>
+
+    <table>
+      <tr *ngFor="let obj of boidKeys">
+        <td>{{ obj.label }}</td>
+        <td style="text-align: right">
+          {{ watchBoid[obj.property] }}
+        </td>
+      </tr>
+    </table>
+  </div>
 </div>
