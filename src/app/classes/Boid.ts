@@ -1,3 +1,4 @@
+import { ConstructionTypeEnum } from '../enums/ContructionTypeEnum';
 import Construction from './Contruction';
 import Step from './Step';
 
@@ -16,6 +17,8 @@ export default class Boid {
   private _steps: Step[] = [];
   private _hungry: number;
   private _thirst: number;
+  private _hunger_rate: number;
+  private _thirst_rate: number;
 
   public get id(): number {
     return this._id;
@@ -77,8 +80,16 @@ export default class Boid {
     return this._hungry;
   }
 
+  public set hungry(value: number) {
+    this._hungry = Math.max(0, Math.min(100, value));
+  }
+
   public get thirst(): number {
     return this._thirst;
+  }
+
+  public set thirst(value: number) {
+    this._thirst = Math.max(0, Math.min(100, value));
   }
 
   constructor(
@@ -91,8 +102,8 @@ export default class Boid {
     color: string,
     velocity: number,
     vision: number,
-    hungry: number,
-    thirst: number
+    hunger_rate: number,
+    thirst_rate: number
   ) {
     this._id = id;
     this._width = width;
@@ -103,13 +114,18 @@ export default class Boid {
     this._color = color;
     this._velocity = velocity;
     this._vision = vision;
-    this._hungry = hungry;
-    this._thirst = thirst;
+    this._hungry = 0;
+    this._thirst = 0;
+    this._hunger_rate = hunger_rate;
+    this._thirst_rate = thirst_rate;
   }
 
   private walk(x: number, y: number) {
     this.x = this.x + x * this._velocity;
     this.y = this.y + y * this._velocity;
+
+    this.increasesHunger();
+    this.increasesThirst();
   }
 
   public addStep(step: Step) {
@@ -127,36 +143,70 @@ export default class Boid {
     this._steps = [];
   }
 
-  public constructionsNearby(contructions: Construction[]): Construction[] {
-    return contructions.filter(
-      (element) =>
-        Math.hypot(element.x - this.x, element.y - this.y) < this.vision
+  public constructionsNearby(constructions: Construction[]): Construction[] {
+    return constructions.filter(
+      (element) => this.distanceOf(element) < this.vision
     );
   }
 
-  public tracePathToConstruction(construction: Construction) {
-    const dx = this.x - construction.x;
-    const dy = this.y - construction.y;
+  public constructionNearest(
+    constructions: Construction[],
+    type: ConstructionTypeEnum = null
+  ): Construction {
+    let constructionsNearby = this.constructionsNearby(constructions);
+    if (type !== null) {
+      constructionsNearby = constructionsNearby.filter(
+        (construction) => construction.type === type
+      );
+    }
+    return constructionsNearby.sort((a, b) =>
+      this.distanceOf(a) < this.distanceOf(b) ? -1 : 1
+    )[0];
+  }
+
+  public boidsNearby(boids: Boid[]): Boid[] {
+    return boids.filter((element) => this.distanceOf(element) < this.vision);
+  }
+
+  public distanceOf(coordinate: { x: number; y: number }): number {
+    return Math.hypot(coordinate.x - this.x, coordinate.y - this.y);
+  }
+
+  public tracePathToCoordinate(
+    coordinate: { x: number; y: number },
+    maxSteps: number = 100
+  ) {
+    const dx = this.x - coordinate.x;
+    const dy = this.y - coordinate.y;
 
     const x_inverter = dx < 0 ? 1 : dx > 0 ? -1 : 0;
-    let y_inverter = dy < 0 ? 1 : dy > 0 ? -1 : 0;
-
-    if (x_inverter && x_inverter !== y_inverter) {
-      y_inverter = x_inverter;
-    }
+    let y_inverter: 1 | -1 | 0 = dy < 0 ? 1 : dy > 0 ? -1 : 0;
 
     let stepsToContruction = Math.floor(Math.abs(dx)) / this._velocity;
+    const sizeStepY = Math.abs(dy / dx);
 
-    if (stepsToContruction < 1) {
+    if (sizeStepY > 2) {
       stepsToContruction = Math.floor(Math.abs(dy)) / this._velocity;
-      for (let i = 0; i < stepsToContruction; i++) {
-        this.addStep(new Step(x_inverter, y_inverter));
+      const sizeStepX = Math.abs(dx / dy);
+      for (let i = 0; i < Math.min(stepsToContruction, maxSteps); i++) {
+        this.addStep(new Step(sizeStepX * x_inverter, y_inverter));
       }
     } else {
-      const m = dy / dx;
-      for (let i = 0; i < stepsToContruction; i++) {
-        this.addStep(new Step(x_inverter, m * y_inverter));
+      for (let i = 0; i < Math.min(stepsToContruction, maxSteps); i++) {
+        this.addStep(new Step(x_inverter, sizeStepY * y_inverter));
       }
     }
+  }
+
+  private increasesHunger() {
+    this.hungry += this._hunger_rate * 0.001;
+  }
+
+  private increasesThirst() {
+    this.thirst += this._thirst_rate * 0.001;
+  }
+
+  public drinkWater() {
+    this.thirst = this.thirst - 15;
   }
 }

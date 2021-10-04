@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Alimento } from '../classes/Alimento';
 import { Walker } from '../classes/Walker';
-import { calcularQuantidadeArray, sleep } from '../funcoes/core';
+import { calcularQuantidadeArray } from '../funcoes/core';
 import {
   randn_bm,
   sortearTipoAlimento,
@@ -11,7 +11,6 @@ import {
   sortearVelocidade,
   sortearForcaDeVontade,
   sortearCorRGB,
-  getRandomInt,
   sortearSexo,
   sortearLongevidade,
   sortearVelocidadeDeReproducao,
@@ -25,7 +24,8 @@ import {
 export class SimulacaoInicialComponent implements OnInit {
   constructor(private route: ActivatedRoute) {}
 
-  public alimentosGeradosPorVez: number = this.getParametroRotaNumeroDeIndividuos();
+  public alimentosGeradosPorVez: number =
+    this.getParametroRotaNumeroDeIndividuos();
   private _totalAlimentoGerado: number = 0;
   private _timeOut: any;
   private _flagGerarAlimentosX: boolean = true;

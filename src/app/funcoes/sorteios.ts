@@ -251,8 +251,9 @@ export function drawContructionSize(contruction: ConstructionTypeEnum): {
       return { width: 12 * multiplier, height: 16 * multiplier };
     case ConstructionTypeEnum.Rock:
       return { width: 10 * multiplier, height: 9 * multiplier };
-
+    case ConstructionTypeEnum.Lake:
+      return { width: 12 * multiplier, height: 7 * multiplier };
     default:
-      return { width: 0, height: 0 };
+      return { width: 1, height: 1 };
   }
 }

@@ -42,12 +42,22 @@
     </div>
     <div class="input-configs">
       <input
-        id="chkShowRoutesBoids"
+        id="chkShowRoutesPreys"
         type="checkbox"
-        (change)="config.showRoutesBoids = !config.showRoutesBoids"
-        [checked]="config.showRoutesBoids"
+        (change)="config.showRoutesPreys = !config.showRoutesPreys"
+        [checked]="config.showRoutesPreys"
       />
-      <label>Show Route</label>
+      <label>Show Route Preys</label>
+      <br />
+    </div>
+    <div class="input-configs">
+      <input
+        id="chkShowRoutesPredators"
+        type="checkbox"
+        (change)="config.showRoutesPredators = !config.showRoutesPredators"
+        [checked]="config.showRoutesPredators"
+      />
+      <label>Show Route Predators</label>
       <br />
     </div>
     <div class="input-configs">
@@ -71,15 +81,48 @@
         placeholder="Enter an id"
         (keyup.enter)="toWatchBoid()"
       />
-      <button type="submit" (click)="toWatchBoid()">Watch Boid</button>
+      <br />
+      <input
+        #radioTypePrey
+        id="radioTypePrey"
+        name="typeBoid"
+        type="radio"
+        value="prey"
+        checked
+      /><label for="radioTypePrey">Prey</label><br />
+      <input
+        #radioTypePredator
+        id="radioTypePredator"
+        name="typeBoid"
+        type="radio"
+        value="predator"
+      /><label for="radioTypePredator">Predator</label><br />
+      <button type="submit" (click)="toWatchBoid()">Watch boid</button>
     </div>
-
-    <table>
+    <table *ngIf="watchBoid">
       <tr *ngFor="let obj of boidKeys">
         <td>{{ obj.label }}</td>
-        <td style="text-align: right">
+        <td
+          style="text-align: right"
+          [ngStyle]="
+            obj.label === 'Color' && {
+              'background-color': watchBoid[obj.property]
+            }
+          "
+        >
           {{ watchBoid[obj.property] }}
         </td>
+      </tr>
+    </table>
+    <h4>Statistics</h4>
+    <table>
+      <tr>
+        <td>Total Predators</td>
+        <td>{{ totalPredators }}</td>
+      </tr>
+      <tr>
+        <td>Total Preys</td>
+        <td>{{ totalPreys }}</td>
       </tr>
     </table>
   </div>

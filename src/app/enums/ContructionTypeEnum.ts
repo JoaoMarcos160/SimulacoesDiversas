@@ -1,7 +1,7 @@
 export enum ConstructionTypeEnum {
+  Bush,
   Tree,
   Rock,
-  Bush,
-  House,
   Lake,
+  House,
 }
