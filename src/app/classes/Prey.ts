@@ -5,6 +5,8 @@ export default class Prey extends Boid {
     id: number,
     width: number,
     height: number,
+    id_father: number,
+    id_mother: number,
     x: number,
     y: number,
     size: number,
@@ -18,6 +20,8 @@ export default class Prey extends Boid {
       id,
       width,
       height,
+      id_father,
+      id_mother,
       x,
       y,
       size,
@@ -38,7 +42,7 @@ export default class Prey extends Boid {
     const dx = this.x - predator.x;
 
     const x_inverter: 1 | -1 = dx > 0 ? 1 : -1;
-    const equation: string = Prey.findEquationOfALine(
+    const equation: string = Boid.findEquationOfALine(
       this.x,
       this.y,
       predator.x,
@@ -48,16 +52,5 @@ export default class Prey extends Boid {
     const x = this.x + 150 * x_inverter;
     const y = eval(equation);
     this.tracePathToCoordinate({ x, y }, 200);
-  }
-
-  public static findEquationOfALine(
-    x1: number,
-    y1: number,
-    x2: number,
-    y2: number
-  ): string {
-    const m = (y2 - y1) / (x2 - x1);
-    const b = y1 - m * x1;
-    return `${m} * x + ${b}`;
   }
 }

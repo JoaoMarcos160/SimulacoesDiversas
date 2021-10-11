@@ -8,6 +8,9 @@ export default class Construction {
   private _width: number;
   private _height: number;
   private _type: ConstructionTypeEnum;
+  private _resource: number;
+  private _max_resource: number;
+  private _resource_rate: number;
 
   public get id(): number {
     return this._id;
@@ -27,6 +30,18 @@ export default class Construction {
   public get height(): number {
     return this._height;
   }
+  public get resource(): number {
+    return this._resource;
+  }
+  public set resource(value: number) {
+    this._resource = Math.max(0, Math.min(this.max_resource, value));
+  }
+  public get max_resource(): number {
+    return this._max_resource;
+  }
+  public get resource_rate(): number {
+    return this._resource_rate;
+  }
 
   constructor(
     id: number,
@@ -34,7 +49,9 @@ export default class Construction {
     y: number,
     type: ConstructionTypeEnum,
     width: number,
-    height: number
+    height: number,
+    resource: number,
+    resource_rate: number
   ) {
     this._id = id;
     this._x = x;
@@ -42,5 +59,18 @@ export default class Construction {
     this._type = type;
     this._width = width;
     this._height = height;
+    this._resource = resource;
+    this._max_resource = resource;
+    this._resource_rate = resource_rate;
   }
+
+  public increasesResources() {
+    this.resource += this.resource_rate;
+  }
+  public decreasesResources() {
+    this.resource -= this.resource_rate;
+  }
+
+  //TODO: Fazer os recursos de uma construção acabarem com o tempo para fazer as presas mudarem de construção
+  //TODO: Fazer os recusros voltarem com o tempo
 }

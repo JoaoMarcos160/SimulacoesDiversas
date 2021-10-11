@@ -5,7 +5,6 @@ import {
   OnInit,
   ViewChild,
 } from '@angular/core';
-// import { ActivatedRoute } from '@angular/router';
 import Prey from '../classes/Prey';
 import Construction from '../classes/Contruction';
 import Predator from '../classes/Predator';
@@ -43,16 +42,26 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
   public context: CanvasRenderingContext2D;
   public screen: { width: number; height: number } = {
     width: window.innerWidth * 0.8,
-    height: window.innerHeight * 0.9,
+    height: window.innerHeight * 0.96,
+    // width: 5000,
+    // height: 5000,
   };
   public velocity: number = 0; //quanto menor mais rápido
   public frameRate: number = 0;
   public countFrame: number = 0;
   public granulityRuler: number = 25;
   public granulityGrid: number = 25;
-  public minDistanceBetwweenCostructions: number = 100;
-  private initialNumberOfPredator: number = 10;
-  private initialNumberOfPreys: number = 100;
+  public minDistanceBetweenCostructions: number = 100;
+  public minDistanceBetweenBoids: number = 18;
+  private initialNumberOfPredator: number = Math.ceil(
+    Math.max(this.screen.height, this.screen.width) / 250
+  );
+  private initialNumberOfPreys: number = Math.ceil(
+    Math.max(this.screen.height, this.screen.width) / 50
+  );
+  private initialNumberOfConstructions: number = Math.ceil(
+    Math.max(this.screen.height, this.screen.width) / 75
+  );
 
   private preys: Prey[] = [];
   private predators: Predator[] = [];
@@ -74,6 +83,8 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
     showRoutesPredators: boolean;
     showRuler: boolean;
     showGrid: boolean;
+    showVisionPreys: boolean;
+    showVisionPredators: boolean;
   } = {
     showFrameRate: true,
     showId: true,
@@ -81,6 +92,8 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
     showRoutesPredators: false,
     showRuler: false,
     showGrid: false,
+    showVisionPreys: false,
+    showVisionPredators: false,
   };
 
   public images: { [number: number]: any } = Object.keys(ConstructionTypeEnum)
@@ -111,7 +124,7 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
       }
     }
 
-    //control boid 1 (big black boid)
+    //control boid 1 (big black boid or if die, the first boid of array)
     document.onkeydown = document.onkeyup = (e) => {
       this.keysStates[e.key] = e.type == 'keydown';
       let x = 0;
@@ -147,14 +160,12 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
   }
 
   ngOnInit(): void {
-    console.log('NgOnInit');
     console.log(this.screen);
 
     this.loadImages();
   }
 
   ngAfterViewInit(): void {
-    console.log('ngAfterViewInit');
     this.context = this.canvas.nativeElement.getContext('2d');
 
     //click to trace route
@@ -164,6 +175,7 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
 
     //double click to teleport predator
     this.canvas.nativeElement.ondblclick = (e) => {
+      this.predators[0].clearSteps();
       this.predators[0].x = e.x;
       this.predators[0].y = e.y;
     };
@@ -202,6 +214,8 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
           i,
           this.screen.width,
           this.screen.height,
+          0,
+          0,
           this.screen.width / 2 + randn_bm() * 50,
           this.screen.height / 2 + randn_bm() * 50,
           i == 1 ? 20 : 10,
@@ -222,6 +236,8 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
           i,
           this.screen.width,
           this.screen.height,
+          0,
+          0,
           getRandomInt(1, this.screen.width),
           getRandomInt(1, this.screen.height),
           15,
@@ -247,7 +263,8 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
       const { x, y } = this.xAndYFarOfConstructions(
         getRandomInt(1, this.screen.width - size.width),
         getRandomInt(1, this.screen.height - size.height),
-        size
+        size,
+        this.minDistanceBetweenCostructions
       );
 
       this.constructions.push(
@@ -258,18 +275,21 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
             y,
             constructionType,
             size.width,
-            size.height
+            size.height,
+            getRandomInt(1, 101),
+            getRandomInt(1, 10)
           )
         )
       );
     });
-    for (let i = 1; i <= getRandomInt(5, 10); i++) {
+    for (let i = 1; i <= this.initialNumberOfConstructions; i++) {
       const type: ConstructionTypeEnum = getRandomInt(0, 4);
       const size = drawContructionSize(type);
       const { x, y } = this.xAndYFarOfConstructions(
         getRandomInt(1, this.screen.width - size.width),
         getRandomInt(1, this.screen.height - size.height),
-        size
+        size,
+        this.minDistanceBetweenCostructions
       );
       this.constructions.push(
         Object.seal(
@@ -279,7 +299,9 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
             y,
             type,
             size.width,
-            size.height
+            size.height,
+            getRandomInt(1, 101),
+            getRandomInt(1, 10)
           )
         )
       );
@@ -291,6 +313,14 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
       //clean all canvas
       this.context.clearRect(0, 0, this.screen.width, this.screen.height);
 
+      //render visions
+      if (this.config.showVisionPreys) {
+        this.drawVisionBoid(this.preys);
+      }
+      if (this.config.showVisionPredators) {
+        this.drawVisionBoid(this.predators);
+      }
+
       //render preys
       this.preys.forEach((prey) => {
         // prey die
@@ -299,14 +329,15 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
           return;
         }
         //escape from predators
-        const nearbyPredators = prey
-          .boidsNearby(this.predators)
-          .sort((a, b) => (prey.distanceOf(a) < prey.distanceOf(b) ? -1 : 1));
+        const nearbyPredators = prey.boidsNearby(this.predators, true);
         if (nearbyPredators.length > 0) {
-          if (prey.distanceOf(nearbyPredators[0]) < 20) {
+          if (prey.distanceOf(nearbyPredators[0]) < getRandomInt(8, 31)) {
             prey.escapeFromPredator(nearbyPredators[0]);
           }
         }
+
+        //avoid others boids
+        prey.avoidOtherBoids(this.preys, this.minDistanceBetweenBoids);
 
         if (prey.steps.length < 1) {
           //ever searching lakes or trees
@@ -335,7 +366,8 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
               }
             }
           }
-          prey.addStep(new Step(randn_bm() * 5, randn_bm() * 5));
+
+          prey.tracePathToRandomDirection();
         }
         prey.walkAStep();
         this.drawPrey(prey);
@@ -349,6 +381,8 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
           this.dieBoid(predator, 'predator');
           return;
         }
+        //avoid others boids
+        predator.avoidOtherBoids(this.predators, this.minDistanceBetweenBoids);
         if (predator.steps.length < 1) {
           //search lakes only thirst below 80
           if (predator.thirst > 50) {
@@ -361,11 +395,13 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
               .sort((a, b) =>
                 predator.distanceOf(a) < predator.distanceOf(b) ? -1 : 1
               )[0];
-            if (nearbyLake) {
+            if (predator.distanceOf(nearbyLake) < 5) {
+              predator.drinkWater();
+            } else {
               predator.tracePathToCoordinate(nearbyLake);
             }
           } else if (predator.hungry > 50) {
-            const preys = predator.boidsNearby(this.preys);
+            const preys = predator.boidsNearby(this.preys, false);
             if (preys.length > 0) {
               const preyNearby = preys.sort((a, b) =>
                 predator.distanceOf(a) < predator.distanceOf(b) ? -1 : 1
@@ -378,7 +414,7 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
             }
           }
 
-          predator.addStep(new Step(randn_bm() * 2, randn_bm() * 2));
+          predator.tracePathToRandomDirection();
         }
         predator.walkAStep();
         this.drawPredator(predator);
@@ -506,6 +542,17 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
     });
   }
 
+  public drawVisionBoid(boids: Boid[]) {
+    boids.forEach((boid) => {
+      this.context.fillStyle = `${boid.color}20`;
+      this.context.strokeStyle = `${boid.color}`;
+      this.context.beginPath();
+      this.context.arc(boid.x, boid.y, boid.vision, 0, Math.PI * 2);
+      this.context.fill();
+      this.context.stroke();
+    });
+  }
+
   public drawRuler() {
     //draw axis x
     for (let i = 0; i < this.screen.width; i += this.granulityRuler) {
@@ -546,21 +593,22 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
   public xAndYFarOfConstructions(
     x: number,
     y: number,
-    size: { width: number; height: number }
+    size: { width: number; height: number },
+    minDistanceBetwweenCostructions: number
   ): { x: number; y: number } {
-    let i = 200;
-    while (i > 0) {
+    let i = 0;
+    while (i < 200) {
       const anyConstruction = this.constructions.find(
         (construction) =>
           Math.hypot(construction.x - x, construction.y - y) <
-          this.minDistanceBetwweenCostructions
+          minDistanceBetwweenCostructions
       );
       if (anyConstruction === undefined) {
         break;
       }
       x = getRandomInt(1, this.screen.width - size.width);
       y = getRandomInt(1, this.screen.height - size.height);
-      i--;
+      i++;
     }
     return { x: x, y: y };
   }
@@ -579,6 +627,34 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
       if (index > -1) {
         this.preys.splice(index, 1);
       }
+    }
+  }
+
+  private generateForest(
+    quantityTrees: number,
+    centerForestX: number,
+    centerForestY: number
+  ) {
+    for (let i = 0; i < quantityTrees; i++) {
+      const size = drawContructionSize(ConstructionTypeEnum.Tree);
+      const { x, y } = {
+        x: centerForestX + randn_bm(),
+        y: centerForestY + randn_bm(),
+      };
+      this.constructions.push(
+        Object.seal(
+          new Construction(
+            this.constructions.length + 1,
+            x,
+            y,
+            ConstructionTypeEnum.Tree,
+            size.width,
+            size.height,
+            getRandomInt(1, 101),
+            getRandomInt(1, 10)
+          )
+        )
+      );
     }
   }
 }

@@ -1,4 +1,5 @@
 import { ConstructionTypeEnum } from '../enums/ContructionTypeEnum';
+import { getRandomInt, randn_bm } from '../funcoes/sorteios';
 import Construction from './Contruction';
 import Step from './Step';
 
@@ -6,6 +7,8 @@ export default class Boid {
   private readonly _id: number;
   private readonly _width: number;
   private readonly _height: number;
+  private readonly _id_father: number;
+  private readonly _id_mother: number;
   private _x: number;
   private _y: number;
   private _color: string;
@@ -30,6 +33,14 @@ export default class Boid {
 
   public get heigth(): number {
     return this._height - this.size;
+  }
+
+  public get id_father(): number {
+    return this._id_father;
+  }
+
+  public get id_mother(): number {
+    return this._id_mother;
   }
 
   public get x(): number {
@@ -96,6 +107,8 @@ export default class Boid {
     id: number,
     width: number,
     height: number,
+    id_father: number,
+    id_mother: number,
     x: number,
     y: number,
     size: number,
@@ -108,6 +121,8 @@ export default class Boid {
     this._id = id;
     this._width = width;
     this._height = height;
+    this._id_father = id_father;
+    this._id_mother = id_mother;
     this._x = x;
     this._y = y;
     this._size = size;
@@ -164,8 +179,16 @@ export default class Boid {
     )[0];
   }
 
-  public boidsNearby(boids: Boid[]): Boid[] {
-    return boids.filter((element) => this.distanceOf(element) < this.vision);
+  public boidsNearby(boids: Boid[], sorted: boolean): Boid[] {
+    const foundBoids = boids.filter(
+      (element) => this.distanceOf(element) < this.vision
+    );
+    if (sorted) {
+      return foundBoids.sort((a, b) =>
+        this.distanceOf(a) < this.distanceOf(b) ? -1 : 1
+      );
+    }
+    return foundBoids;
   }
 
   public distanceOf(coordinate: { x: number; y: number }): number {
@@ -174,7 +197,7 @@ export default class Boid {
 
   public tracePathToCoordinate(
     coordinate: { x: number; y: number },
-    maxSteps: number = 100
+    maxSteps: number = 50
   ) {
     const dx = this.x - coordinate.x;
     const dy = this.y - coordinate.y;
@@ -207,6 +230,53 @@ export default class Boid {
   }
 
   public drinkWater() {
-    this.thirst = this.thirst - 15;
+    this.thirst -= 15;
   }
+
+  public tracePathToRandomDirection() {
+    this.tracePathToCoordinate(
+      { x: getRandomInt(0, this.width), y: getRandomInt(0, this.heigth) },
+      30
+    );
+  }
+
+  public avoidOtherBoids(boids: Boid[], min_distance: number): void {
+    const nearbyBoids = this.boidsNearby(boids, true);
+    if (nearbyBoids.length > 1) {
+      const nearbyBoid = nearbyBoids[1];
+      //the nearbyBoids[0] is ever the own boid
+      if (this.distanceOf(nearbyBoid) < min_distance) {
+        this.clearSteps();
+        const dx = this.x - nearbyBoid.x;
+        const x_inverter: 1 | -1 = dx > 0 ? 1 : -1;
+
+        if (dx === 0) {
+          this.tracePathToRandomDirection();
+        } else {
+          const equation = Boid.findEquationOfALine(
+            this.x,
+            this.y,
+            nearbyBoid.x,
+            nearbyBoid.y
+          );
+          const x = this.x + min_distance * x_inverter;
+          const y = eval(equation);
+          this.tracePathToCoordinate({ x, y }, min_distance * 2);
+        }
+      }
+    }
+  }
+
+  public static findEquationOfALine(
+    x1: number,
+    y1: number,
+    x2: number,
+    y2: number
+  ): string {
+    const m = (y2 - y1) / (x2 - x1);
+    const b = y1 - m * x1;
+    return `${m} * x + ${b}`;
+  }
+
+  //TODO: Fazer eles se reproduzirem passando os genes adiante
 }

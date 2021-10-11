@@ -130,14 +130,14 @@ export function sortearTamanhoDoPasso(): number {
 
 /**
  *
- * @returns Sorteia uma cor no formato hexadecimal
+ * @returns Sorteia uma cor no formato hexadecimal de 6 caracateres
  */
 export function sortearCorHex(): string {
   let hexadecimais = '0123456789ABCDEF';
   let cor = '#';
   // Pega um número aleatório no array acima
   // aqui está gerando cores no formato "#ABC" (3 valores apenas)
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < 6; i++) {
     //E concatena à variável cor
     cor += hexadecimais[Math.floor(Math.random() * 16)];
   }

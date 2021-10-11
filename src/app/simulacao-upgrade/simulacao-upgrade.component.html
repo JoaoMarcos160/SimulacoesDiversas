@@ -62,6 +62,26 @@
     </div>
     <div class="input-configs">
       <input
+        id="chkShowVisionPreys"
+        type="checkbox"
+        (change)="config.showVisionPreys = !config.showVisionPreys"
+        [checked]="config.showVisionPreys"
+      />
+      <label>Show Vision Preys</label>
+      <br />
+    </div>
+    <div class="input-configs">
+      <input
+        id="chkShowVisionPredators"
+        type="checkbox"
+        (change)="config.showVisionPredators = !config.showVisionPredators"
+        [checked]="config.showVisionPredators"
+      />
+      <label>Show Vision Predators</label>
+      <br />
+    </div>
+    <div class="input-configs">
+      <input
         id="chkShowRuler"
         type="checkbox"
         (change)="config.showRuler = !config.showRuler"
