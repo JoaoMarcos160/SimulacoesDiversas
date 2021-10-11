@@ -261,7 +261,7 @@ export default class Boid {
           );
           const x = this.x + min_distance * x_inverter;
           const y = eval(equation);
-          this.tracePathToCoordinate({ x, y }, min_distance * 2);
+          this.tracePathToCoordinate({ x, y }, min_distance);
         }
       }
     }

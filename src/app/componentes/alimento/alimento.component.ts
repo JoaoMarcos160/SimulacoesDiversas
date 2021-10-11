@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { AlimentoTipo } from '../enums/AlimentoTipoEnum';
+import { AlimentoTipo } from '../../enums/AlimentoTipoEnum';
 
 @Component({
   selector: 'app-alimento',

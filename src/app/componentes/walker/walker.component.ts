@@ -1,5 +1,5 @@
-import { Component, Input, OnInit, Output, EventEmitter } from '@angular/core';
-import { Walker } from '../classes/Walker';
+import { Component, Input, OnInit } from '@angular/core';
+import { Walker } from '../../classes/Walker';
 
 @Component({
   selector: 'app-walker',

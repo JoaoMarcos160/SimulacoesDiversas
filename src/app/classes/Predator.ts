@@ -42,6 +42,7 @@ export default class Predator extends Boid {
       hunger_rate,
       thirst_rate
     );
+    this._preys_eaten = 0;
     this._attack_range = attack_range;
   }
 

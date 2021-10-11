@@ -52,7 +52,7 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
   public granulityRuler: number = 25;
   public granulityGrid: number = 25;
   public minDistanceBetweenCostructions: number = 100;
-  public minDistanceBetweenBoids: number = 18;
+  public minDistanceBetweenBoids: number = 2;
   private initialNumberOfPredator: number = Math.ceil(
     Math.max(this.screen.height, this.screen.width) / 250
   );
@@ -331,7 +331,7 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
         //escape from predators
         const nearbyPredators = prey.boidsNearby(this.predators, true);
         if (nearbyPredators.length > 0) {
-          if (prey.distanceOf(nearbyPredators[0]) < getRandomInt(8, 31)) {
+          if (prey.distanceOf(nearbyPredators[0]) < getRandomInt(1, 5)) {
             prey.escapeFromPredator(nearbyPredators[0]);
           }
         }
@@ -347,7 +347,7 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
               ConstructionTypeEnum.Lake
             );
             if (nearbyLake) {
-              if (prey.distanceOf(nearbyLake) < 5) {
+              if (prey.distanceOf(nearbyLake) < this.minDistanceBetweenBoids) {
                 prey.drinkWater();
               } else {
                 prey.tracePathToCoordinate(nearbyLake);
@@ -359,7 +359,7 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
               ConstructionTypeEnum.Tree
             );
             if (nearbyTree) {
-              if (prey.distanceOf(nearbyTree) < 5) {
+              if (prey.distanceOf(nearbyTree) < this.minDistanceBetweenBoids) {
                 prey.eatFood();
               } else {
                 prey.tracePathToCoordinate(nearbyTree);
@@ -395,7 +395,9 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
               .sort((a, b) =>
                 predator.distanceOf(a) < predator.distanceOf(b) ? -1 : 1
               )[0];
-            if (predator.distanceOf(nearbyLake) < 5) {
+            if (
+              predator.distanceOf(nearbyLake) < this.minDistanceBetweenBoids
+            ) {
               predator.drinkWater();
             } else {
               predator.tracePathToCoordinate(nearbyLake);

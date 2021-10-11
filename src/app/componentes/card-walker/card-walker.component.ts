@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { Walker } from '../classes/Walker';
+import { Walker } from '../../classes/Walker';
 
 @Component({
   selector: 'app-card-walker',
