@@ -236,15 +236,15 @@ export function sortearVelocidadeDeReproducao(): number {
 
 /**
  *
- * @param contruction type of contruction
+ * @param contructionType type of contruction
  * @returns width and height for the respective construction
  */
-export function drawContructionSize(contruction: ConstructionTypeEnum): {
+export function drawContructionSize(contructionType: ConstructionTypeEnum): {
   width: number;
   height: number;
 } {
   const multiplier = Math.round(Math.abs(randn_bm())) + 5;
-  switch (contruction) {
+  switch (contructionType) {
     case ConstructionTypeEnum.Bush:
       return { width: 16 * multiplier, height: 9 * multiplier };
     case ConstructionTypeEnum.Tree:
@@ -256,4 +256,33 @@ export function drawContructionSize(contruction: ConstructionTypeEnum): {
     default:
       return { width: 1, height: 1 };
   }
+}
+
+/**
+ *
+ * @param constructionType type of contruction
+ * @returns max resource for the respective construction
+ */
+export function maxResourceConstruction(
+  size: number,
+  constructionType: ConstructionTypeEnum
+): number {
+  switch (constructionType) {
+    case ConstructionTypeEnum.Lake:
+      return getRandomInt(size * 10, size * 15);
+
+    default:
+      return getRandomInt(size * 2, size * 4);
+  }
+}
+
+/**
+ *
+ * @param contructionType type of contruction
+ * @returns reource rate for the respective construction
+ */
+export function drawResourceRate(
+  contructionType: ConstructionTypeEnum
+): number {
+  return Math.abs(randn_bm());
 }

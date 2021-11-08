@@ -2,6 +2,7 @@ import {
   AfterViewInit,
   Component,
   ElementRef,
+  OnDestroy,
   OnInit,
   ViewChild,
 } from '@angular/core';
@@ -12,12 +13,15 @@ import Step from '../classes/Step';
 import { ConstructionTypeEnum } from '../enums/ContructionTypeEnum';
 import {
   drawContructionSize,
+  drawResourceRate,
   getRandomInt,
+  maxResourceConstruction,
   randn_bm,
   sortearCorHex,
 } from '../funcoes/sorteios';
 import Boid from '../classes/Boid';
 import { ActivatedRoute } from '@angular/router';
+import { LocalStorageService } from '../services/local-storage.service';
 
 const keysDown = ['Down', 'ArrowDown', 'S', 's'];
 const keysUp = ['Up', 'ArrowUp', 'W', 'w'];
@@ -29,7 +33,9 @@ const keysRight = ['Right', 'ArrowRight', 'D', 'd'];
   templateUrl: './simulacao-upgrade.component.html',
   styleUrls: ['./simulacao-upgrade.component.scss'],
 })
-export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
+export class SimulacaoUpgradeComponent
+  implements AfterViewInit, OnInit, OnDestroy
+{
   @ViewChild('canvas')
   canvas: ElementRef<HTMLCanvasElement>;
   @ViewChild('txtIdBoid')
@@ -38,6 +44,8 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
   radioTypePrey: ElementRef<HTMLInputElement>;
   @ViewChild('radioTypePredator')
   radioTypePredator: ElementRef<HTMLInputElement>;
+  @ViewChild('radioTypeConstruction')
+  radioTypeConstruction: ElementRef<HTMLInputElement>;
 
   public context: CanvasRenderingContext2D;
   public screen: { width: number; height: number } = {
@@ -53,6 +61,7 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
   public granulityGrid: number = 25;
   public minDistanceBetweenCostructions: number = 100;
   public minDistanceBetweenBoids: number = 2;
+  public distanceToConsumeResources: number = 10;
   private initialNumberOfPredator: number = Math.ceil(
     Math.max(this.screen.height, this.screen.width) / 250
   );
@@ -66,8 +75,8 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
   private preys: Prey[] = [];
   private predators: Predator[] = [];
   private constructions: Construction[] = [];
-  public watchBoid: Boid = null;
-  public boidKeys: { property: string; label: string }[] = [];
+  public watch: Boid | Construction = null;
+  public objKeys: { property: string; label: string }[] = [];
 
   public get totalPredators(): number {
     return this.predators.length;
@@ -75,6 +84,18 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
   public get totalPreys(): number {
     return this.preys.length;
   }
+
+  private keysLocalStorage: {
+    configs: string;
+    arrayPreys: string;
+    arrayPredators: string;
+    arrayConstructions: string;
+  } = {
+    configs: '@simulacao:configs',
+    arrayPreys: '@simulacao:arrayPreys',
+    arrayPredators: '@simulacao:arrayPredators',
+    arrayConstructions: '@simulacao:arrayConstructions',
+  };
 
   public config: {
     showFrameRate: boolean;
@@ -85,6 +106,7 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
     showGrid: boolean;
     showVisionPreys: boolean;
     showVisionPredators: boolean;
+    showResources: boolean;
   } = {
     showFrameRate: true,
     showId: true,
@@ -94,6 +116,7 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
     showGrid: false,
     showVisionPreys: false,
     showVisionPredators: false,
+    showResources: true,
   };
 
   public images: { [number: number]: any } = Object.keys(ConstructionTypeEnum)
@@ -105,7 +128,10 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
 
   private keysStates: { [string: string]: boolean } = {};
 
-  constructor(private route: ActivatedRoute) {
+  constructor(
+    private route: ActivatedRoute,
+    private localStorage: LocalStorageService
+  ) {
     //get number of predators and preys
     if (route.snapshot.params.predators) {
       if (
@@ -122,6 +148,38 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
       ) {
         this.initialNumberOfPreys = route.snapshot.params.preys;
       }
+    }
+
+    //load configuracoes
+    const configs = localStorage.get(this.keysLocalStorage.configs);
+    if (configs) {
+      this.config = configs;
+    } else {
+      localStorage.set(this.keysLocalStorage.configs, this.config);
+    }
+    const arrayPreys = localStorage.get(this.keysLocalStorage.arrayPreys);
+    if (arrayPreys) {
+      this.preys = arrayPreys;
+    } else {
+      this.createPreys();
+    }
+    const arrayPredators = localStorage.get(
+      this.keysLocalStorage.arrayPredators
+    );
+
+    if (arrayPredators) {
+      this.predators = arrayPredators;
+    } else {
+      this.createPreys();
+    }
+    const arrayConstructions = localStorage.get(
+      this.keysLocalStorage.arrayConstructions
+    );
+    console.log(arrayConstructions);
+    if (arrayConstructions) {
+      this.constructions = arrayConstructions;
+    } else {
+      this.createConstructions();
     }
 
     //control boid 1 (big black boid or if die, the first boid of array)
@@ -153,10 +211,6 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
         this.preys[0].addStep(new Step(x, y));
       }
     };
-
-    this.createConstructions();
-    this.createPreys();
-    this.createPredators();
   }
 
   ngOnInit(): void {
@@ -182,6 +236,10 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
 
     //loop
     this.cycle();
+  }
+
+  ngOnDestroy() {
+    this.saveSection();
   }
 
   public loadImages() {
@@ -276,8 +334,11 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
             constructionType,
             size.width,
             size.height,
-            getRandomInt(1, 101),
-            getRandomInt(1, 10)
+            maxResourceConstruction(
+              Math.max(size.height, size.width),
+              constructionType
+            ),
+            drawResourceRate(ConstructionTypeEnum.Tree)
           )
         )
       );
@@ -300,8 +361,8 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
             type,
             size.width,
             size.height,
-            getRandomInt(1, 101),
-            getRandomInt(1, 10)
+            maxResourceConstruction(Math.max(size.height, size.width), type),
+            drawResourceRate(ConstructionTypeEnum.Tree)
           )
         )
       );
@@ -313,13 +374,12 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
       //clean all canvas
       this.context.clearRect(0, 0, this.screen.width, this.screen.height);
 
-      //render visions
-      if (this.config.showVisionPreys) {
-        this.drawVisionBoid(this.preys);
-      }
-      if (this.config.showVisionPredators) {
-        this.drawVisionBoid(this.predators);
-      }
+      //process constructions
+      this.constructions.forEach((construction) => {
+        if (new Date().getSeconds() % 10 === 0) {
+          construction.increasesResources();
+        }
+      });
 
       //render preys
       this.preys.forEach((prey) => {
@@ -331,7 +391,7 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
         //escape from predators
         const nearbyPredators = prey.boidsNearby(this.predators, true);
         if (nearbyPredators.length > 0) {
-          if (prey.distanceOf(nearbyPredators[0]) < getRandomInt(1, 5)) {
+          if (prey.distanceOf(nearbyPredators[0]) < getRandomInt(5, 15)) {
             prey.escapeFromPredator(nearbyPredators[0]);
           }
         }
@@ -344,11 +404,20 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
           if (prey.thirst > prey.hungry) {
             const nearbyLake = prey.constructionNearest(
               this.constructions,
+              true,
               ConstructionTypeEnum.Lake
             );
-            if (nearbyLake) {
-              if (prey.distanceOf(nearbyLake) < this.minDistanceBetweenBoids) {
+            if (nearbyLake && nearbyLake.resource > prey.thirst_rate) {
+              if (
+                prey.distanceOf(nearbyLake) < this.distanceToConsumeResources
+              ) {
                 prey.drinkWater();
+                const index = this.constructions.indexOf(nearbyLake);
+                if (index > 0) {
+                  this.constructions[index].decreasesResources(
+                    prey.thirst_rate
+                  );
+                }
               } else {
                 prey.tracePathToCoordinate(nearbyLake);
               }
@@ -356,18 +425,28 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
           } else {
             const nearbyTree = prey.constructionNearest(
               this.constructions,
+              true,
               ConstructionTypeEnum.Tree
             );
-            if (nearbyTree) {
-              if (prey.distanceOf(nearbyTree) < this.minDistanceBetweenBoids) {
+            if (nearbyTree && nearbyTree.resource > prey.hunger_rate) {
+              if (
+                prey.distanceOf(nearbyTree) < this.distanceToConsumeResources
+              ) {
                 prey.eatFood();
+                const index = this.constructions.indexOf(nearbyTree);
+                if (index > 0) {
+                  this.constructions[index].decreasesResources(
+                    prey.hunger_rate
+                  );
+                }
               } else {
                 prey.tracePathToCoordinate(nearbyTree);
               }
             }
           }
-
-          prey.tracePathToRandomDirection();
+          if (prey.steps.length < 1) {
+            prey.tracePathToRandomDirection();
+          }
         }
         prey.walkAStep();
         this.drawPrey(prey);
@@ -384,23 +463,28 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
         //avoid others boids
         predator.avoidOtherBoids(this.predators, this.minDistanceBetweenBoids);
         if (predator.steps.length < 1) {
-          //search lakes only thirst below 80
+          //search lakes only thirst below 50
           if (predator.thirst > 50) {
-            const nearbyLake = predator
-              .constructionsNearby(this.constructions)
-              .filter(
-                (construction) =>
-                  construction.type === ConstructionTypeEnum.Lake
-              )
-              .sort((a, b) =>
-                predator.distanceOf(a) < predator.distanceOf(b) ? -1 : 1
-              )[0];
-            if (
-              predator.distanceOf(nearbyLake) < this.minDistanceBetweenBoids
-            ) {
-              predator.drinkWater();
-            } else {
-              predator.tracePathToCoordinate(nearbyLake);
+            const nearbyLake = predator.constructionNearest(
+              this.constructions,
+              true,
+              ConstructionTypeEnum.Lake
+            );
+            if (nearbyLake && nearbyLake.resource > predator.thirst_rate) {
+              if (
+                predator.distanceOf(nearbyLake) <
+                this.distanceToConsumeResources
+              ) {
+                predator.drinkWater();
+                const index = this.constructions.indexOf(nearbyLake);
+                if (index > 0) {
+                  this.constructions[index].decreasesResources(
+                    predator.thirst_rate
+                  );
+                }
+              } else {
+                predator.tracePathToCoordinate(nearbyLake);
+              }
             }
           } else if (predator.hungry > 50) {
             const preys = predator.boidsNearby(this.preys, false);
@@ -415,7 +499,7 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
               predator.tracePathToCoordinate(preyNearby, 50);
             }
           }
-
+          predator.clearSteps();
           predator.tracePathToRandomDirection();
         }
         predator.walkAStep();
@@ -456,20 +540,31 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
     const id = parseInt(this.txtIdBoid.nativeElement.value);
     const typePrey = this.radioTypePrey.nativeElement.checked;
     const typePredator = this.radioTypePredator.nativeElement.checked;
+    const typeConstruction = this.radioTypeConstruction.nativeElement.checked;
 
     if (typePrey) {
-      this.watchBoid = this.preys.find((boid) => boid.id === id);
+      this.watch = this.preys.find((boid) => boid.id === id);
     } else if (typePredator) {
-      this.watchBoid = this.predators.find((boid) => boid.id === id);
+      this.watch = this.predators.find((boid) => boid.id === id);
+    } else if (typeConstruction) {
+      this.watch = this.constructions.find(
+        (construction) => construction.id === id
+      );
     }
-    if (this.watchBoid) {
-      this.boidKeys = this.extractKeys(this.watchBoid);
+    if (this.watch) {
+      this.objKeys = this.extractKeys(this.watch);
     }
   }
 
-  public extractKeys(boid: Boid): { property: string; label: string }[] {
-    if (!!boid) {
-      return Object.keys(boid)
+  public unwatchBoid() {
+    this.watch = null;
+  }
+
+  public extractKeys(
+    obj: Boid | Construction
+  ): { property: string; label: string }[] {
+    if (!!obj) {
+      return Object.keys(obj)
         .map((property: string) => {
           const key = property.replace(/^_/, '');
           return {
@@ -485,8 +580,13 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
   public drawPrey(prey: Prey) {
     this.context.fillStyle = prey.color;
     this.context.fillRect(prey.x, prey.y, prey.size, prey.size);
+    //render id
     if (this.config.showId) {
       this.context.fillText(prey.id.toString(), prey.x, prey.y - 1);
+    }
+    //render visions
+    if (this.config.showVisionPreys) {
+      this.drawVisionBoid(prey);
     }
   }
 
@@ -499,8 +599,13 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
       predator.size,
       predator.size
     );
+    //render id
     if (this.config.showId) {
       this.context.fillText(predator.id.toString(), predator.x, predator.y - 1);
+    }
+    //render visions
+    if (this.config.showVisionPredators) {
+      this.drawVisionBoid(predator);
     }
   }
 
@@ -509,14 +614,24 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
   }
 
   public contructionRender() {
-    this.constructions.forEach((contruction) => {
+    this.context.fillStyle = '#0d0d0d';
+    this.constructions.forEach((construction) => {
       this.context.drawImage(
-        this.images[contruction.type],
-        contruction.x,
-        contruction.y,
-        contruction.width,
-        contruction.height
+        this.images[construction.type],
+        construction.x,
+        construction.y,
+        construction.width,
+        construction.height
       );
+
+      //render resources by construction
+      if (this.config.showResources) {
+        this.context.fillText(
+          Math.trunc(construction.resource).toString(),
+          construction.x,
+          construction.y
+        );
+      }
     });
   }
 
@@ -544,15 +659,13 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
     });
   }
 
-  public drawVisionBoid(boids: Boid[]) {
-    boids.forEach((boid) => {
-      this.context.fillStyle = `${boid.color}20`;
-      this.context.strokeStyle = `${boid.color}`;
-      this.context.beginPath();
-      this.context.arc(boid.x, boid.y, boid.vision, 0, Math.PI * 2);
-      this.context.fill();
-      this.context.stroke();
-    });
+  public drawVisionBoid(boid: Boid) {
+    this.context.fillStyle = `${boid.color}20`;
+    this.context.strokeStyle = `${boid.color}`;
+    this.context.beginPath();
+    this.context.arc(boid.x, boid.y, boid.vision, 0, Math.PI * 2);
+    this.context.fill();
+    this.context.stroke();
   }
 
   public drawRuler() {
@@ -652,11 +765,28 @@ export class SimulacaoUpgradeComponent implements AfterViewInit, OnInit {
             ConstructionTypeEnum.Tree,
             size.width,
             size.height,
-            getRandomInt(1, 101),
-            getRandomInt(1, 10)
+            maxResourceConstruction(
+              Math.max(size.height, size.width),
+              ConstructionTypeEnum.Tree
+            ),
+            drawResourceRate(ConstructionTypeEnum.Tree)
           )
         )
       );
     }
+  }
+
+  public handleConfigs(key: string, value: any) {
+    this.config[key] = value;
+    this.localStorage.set(this.keysLocalStorage.configs, this.config);
+  }
+
+  public saveSection() {
+    this.localStorage.set(this.keysLocalStorage.arrayPreys, this.preys);
+    this.localStorage.set(this.keysLocalStorage.arrayPredators, this.predators);
+    this.localStorage.set(
+      this.keysLocalStorage.arrayConstructions,
+      this.constructions
+    );
   }
 }

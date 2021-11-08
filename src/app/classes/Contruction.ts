@@ -67,10 +67,7 @@ export default class Construction {
   public increasesResources() {
     this.resource += this.resource_rate;
   }
-  public decreasesResources() {
-    this.resource -= this.resource_rate;
+  public decreasesResources(value: number) {
+    this.resource -= value;
   }
-
-  //TODO: Fazer os recursos de uma construção acabarem com o tempo para fazer as presas mudarem de construção
-  //TODO: Fazer os recusros voltarem com o tempo
 }

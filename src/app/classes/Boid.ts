@@ -103,6 +103,14 @@ export default class Boid {
     this._thirst = Math.max(0, Math.min(100, value));
   }
 
+  public get hunger_rate(): number {
+    return this._hunger_rate;
+  }
+
+  public get thirst_rate(): number {
+    return this._thirst_rate;
+  }
+
   constructor(
     id: number,
     width: number,
@@ -166,6 +174,7 @@ export default class Boid {
 
   public constructionNearest(
     constructions: Construction[],
+    onlyResourceAvaiable: boolean = false,
     type: ConstructionTypeEnum = null
   ): Construction {
     let constructionsNearby = this.constructionsNearby(constructions);
@@ -173,6 +182,11 @@ export default class Boid {
       constructionsNearby = constructionsNearby.filter(
         (construction) => construction.type === type
       );
+    }
+    if (onlyResourceAvaiable) {
+      return constructionsNearby
+        .filter((a) => a.resource > 0)
+        .sort((a, b) => (this.distanceOf(a) < this.distanceOf(b) ? -1 : 1))[0];
     }
     return constructionsNearby.sort((a, b) =>
       this.distanceOf(a) < this.distanceOf(b) ? -1 : 1
@@ -197,7 +211,7 @@ export default class Boid {
 
   public tracePathToCoordinate(
     coordinate: { x: number; y: number },
-    maxSteps: number = 50
+    maxSteps: number = 100
   ) {
     const dx = this.x - coordinate.x;
     const dy = this.y - coordinate.y;
@@ -236,7 +250,7 @@ export default class Boid {
   public tracePathToRandomDirection() {
     this.tracePathToCoordinate(
       { x: getRandomInt(0, this.width), y: getRandomInt(0, this.heigth) },
-      30
+      15
     );
   }
 

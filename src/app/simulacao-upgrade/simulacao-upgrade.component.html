@@ -14,7 +14,7 @@
       <input
         id="chkShowFrameRate"
         type="checkbox"
-        (change)="config.showFrameRate = !config.showFrameRate"
+        (change)="handleConfigs('showFrameRate', !config.showFrameRate)"
         [checked]="config.showFrameRate"
       />
       <label>Show Frame Rate</label>
@@ -24,7 +24,7 @@
       <input
         id="chkShowGrid"
         type="checkbox"
-        (change)="config.showGrid = !config.showGrid"
+        (change)="handleConfigs('showGrid', !config.showGrid)"
         [checked]="config.showGrid"
       />
       <label>Show Grid</label>
@@ -34,7 +34,7 @@
       <input
         id="chkShowId"
         type="checkbox"
-        (change)="config.showId = !config.showId"
+        (change)="handleConfigs('showId', !config.showId)"
         [checked]="config.showId"
       />
       <label>Show Id</label>
@@ -44,7 +44,7 @@
       <input
         id="chkShowRoutesPreys"
         type="checkbox"
-        (change)="config.showRoutesPreys = !config.showRoutesPreys"
+        (change)="handleConfigs('showRoutesPreys', !config.showRoutesPreys)"
         [checked]="config.showRoutesPreys"
       />
       <label>Show Route Preys</label>
@@ -54,7 +54,9 @@
       <input
         id="chkShowRoutesPredators"
         type="checkbox"
-        (change)="config.showRoutesPredators = !config.showRoutesPredators"
+        (change)="
+          handleConfigs('showRoutesPredators', !config.showRoutesPredators)
+        "
         [checked]="config.showRoutesPredators"
       />
       <label>Show Route Predators</label>
@@ -64,7 +66,7 @@
       <input
         id="chkShowVisionPreys"
         type="checkbox"
-        (change)="config.showVisionPreys = !config.showVisionPreys"
+        (change)="handleConfigs('showVisionPreys', !config.showVisionPreys)"
         [checked]="config.showVisionPreys"
       />
       <label>Show Vision Preys</label>
@@ -74,7 +76,9 @@
       <input
         id="chkShowVisionPredators"
         type="checkbox"
-        (change)="config.showVisionPredators = !config.showVisionPredators"
+        (change)="
+          handleConfigs('showVisionPredators', !config.showVisionPredators)
+        "
         [checked]="config.showVisionPredators"
       />
       <label>Show Vision Predators</label>
@@ -84,13 +88,24 @@
       <input
         id="chkShowRuler"
         type="checkbox"
-        (change)="config.showRuler = !config.showRuler"
+        (change)="handleConfigs('showRuler', !config.showRuler)"
         [checked]="config.showRuler"
       />
       <label>Show Ruler</label>
-      <div class="fps">
-        {{ config.showFrameRate ? frameRate + " FPS" : "" }}
-      </div>
+      <br />
+    </div>
+    <div class="input-configs">
+      <input
+        id="chkShowResources"
+        type="checkbox"
+        (change)="handleConfigs('showResources', !config.showResources)"
+        [checked]="config.showResources"
+      />
+      <label>Show Resources</label>
+      <br />
+    </div>
+    <div class="fps">
+      {{ config.showFrameRate ? frameRate + " FPS" : "" }}
     </div>
 
     <div class="input-configs">
@@ -109,28 +124,42 @@
         type="radio"
         value="prey"
         checked
-      /><label for="radioTypePrey">Prey</label><br />
+      />
+      <label for="radioTypePrey">Prey</label>
+      <br />
       <input
         #radioTypePredator
         id="radioTypePredator"
         name="typeBoid"
         type="radio"
         value="predator"
-      /><label for="radioTypePredator">Predator</label><br />
-      <button type="submit" (click)="toWatchBoid()">Watch boid</button>
+      />
+      <label for="radioTypePredator">Predator</label>
+      <br />
+      <input
+        #radioTypeConstruction
+        id="radioTypeConstruction"
+        name="typeBoid"
+        type="radio"
+        value="construction"
+      />
+      <label for="radioTypeConstruction">Construction</label>
+      <br />
+      <button type="submit" (click)="toWatchBoid()">Watch</button>
+      <button type="submit" (click)="unwatchBoid()">Unwatch</button>
     </div>
-    <table *ngIf="watchBoid">
-      <tr *ngFor="let obj of boidKeys">
+    <table *ngIf="watch">
+      <tr *ngFor="let obj of objKeys">
         <td>{{ obj.label }}</td>
         <td
           style="text-align: right"
           [ngStyle]="
             obj.label === 'Color' && {
-              'background-color': watchBoid[obj.property]
+              'background-color': watch[obj.property]
             }
           "
         >
-          {{ watchBoid[obj.property] }}
+          {{ watch[obj.property] }}
         </td>
       </tr>
     </table>
