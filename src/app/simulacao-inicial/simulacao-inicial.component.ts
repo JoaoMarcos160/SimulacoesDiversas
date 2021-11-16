@@ -22,7 +22,7 @@ import {
   styleUrls: ['./simulacao-inicial.component.scss'],
 })
 export class SimulacaoInicialComponent implements OnInit {
-  constructor(private route: ActivatedRoute) {}
+  constructor(private route: ActivatedRoute) { }
 
   public alimentosGeradosPorVez: number =
     this.getParametroRotaNumeroDeIndividuos();
@@ -138,9 +138,9 @@ export class SimulacaoInicialComponent implements OnInit {
     let retorno: { chave: string; media: number }[] = [];
     let totalIndividuos: number = this.totalWalkersVivos;
     let velocidades: number = 0;
-    this.walkers.forEach((elem) => {
+    for (const elem of this.walkers) {
       velocidades += elem.velocidade;
-    });
+    }
     velocidades = velocidades / totalIndividuos;
     retorno.push({ chave: 'Velocidade', media: velocidades });
     return retorno;
@@ -213,18 +213,18 @@ export class SimulacaoInicialComponent implements OnInit {
         new Alimento(
           this._flagGerarAlimentosX
             ? Math.trunc(
-                Math.min(
-                  Math.abs(randn_bm() * (this.totalEixoX / 8)) +
-                    this.totalEixoX / 2,
-                  this.totalEixoX * 0.95
-                )
+              Math.min(
+                Math.abs(randn_bm() * (this.totalEixoX / 8)) +
+                this.totalEixoX / 2,
+                this.totalEixoX * 0.95
               )
+            )
             : Math.trunc(
-                Math.min(
-                  Math.abs(randn_bm() * (this.totalEixoX / 8)),
-                  this.totalEixoX * 0.95
-                )
-              ),
+              Math.min(
+                Math.abs(randn_bm() * (this.totalEixoX / 8)),
+                this.totalEixoX * 0.95
+              )
+            ),
           Math.trunc(
             Math.min(
               randn_bm() * (this.totalEixoY / 8) + this.totalEixoY / 2,

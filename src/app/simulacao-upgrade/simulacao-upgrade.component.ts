@@ -34,8 +34,7 @@ const keysRight = ['Right', 'ArrowRight', 'D', 'd'];
   styleUrls: ['./simulacao-upgrade.component.scss'],
 })
 export class SimulacaoUpgradeComponent
-  implements AfterViewInit, OnInit, OnDestroy
-{
+  implements AfterViewInit, OnInit, OnDestroy {
   @ViewChild('canvas')
   canvas: ElementRef<HTMLCanvasElement>;
   @ViewChild('txtIdBoid')
@@ -91,11 +90,11 @@ export class SimulacaoUpgradeComponent
     arrayPredators: string;
     arrayConstructions: string;
   } = {
-    configs: '@simulacao:configs',
-    arrayPreys: '@simulacao:arrayPreys',
-    arrayPredators: '@simulacao:arrayPredators',
-    arrayConstructions: '@simulacao:arrayConstructions',
-  };
+      configs: '@simulacao:configs',
+      arrayPreys: '@simulacao:arrayPreys',
+      arrayPredators: '@simulacao:arrayPredators',
+      arrayConstructions: '@simulacao:arrayConstructions',
+    };
 
   public config: {
     showFrameRate: boolean;
@@ -108,16 +107,16 @@ export class SimulacaoUpgradeComponent
     showVisionPredators: boolean;
     showResources: boolean;
   } = {
-    showFrameRate: true,
-    showId: true,
-    showRoutesPreys: false,
-    showRoutesPredators: false,
-    showRuler: false,
-    showGrid: false,
-    showVisionPreys: false,
-    showVisionPredators: false,
-    showResources: true,
-  };
+      showFrameRate: true,
+      showId: true,
+      showRoutesPreys: false,
+      showRoutesPredators: false,
+      showRuler: false,
+      showGrid: false,
+      showVisionPreys: false,
+      showVisionPredators: false,
+      showResources: true,
+    };
 
   public images: { [number: number]: any } = Object.keys(ConstructionTypeEnum)
     .filter((key) => /^\d+$/.test(key))
@@ -243,7 +242,7 @@ export class SimulacaoUpgradeComponent
   }
 
   public loadImages() {
-    Object.keys(this.images).forEach((image) => {
+    for (const image of Object.keys(this.images)) {
       switch (image) {
         case ConstructionTypeEnum.Bush.toString():
           this.images[image].src = '../../assets/bush.png';
@@ -262,7 +261,7 @@ export class SimulacaoUpgradeComponent
           console.error(`Construction not found! value: ${image}`);
           break;
       }
-    });
+    }
   }
 
   public createPreys() {
@@ -316,7 +315,7 @@ export class SimulacaoUpgradeComponent
       ConstructionTypeEnum.Lake,
     ];
 
-    constructionsStandard.forEach((constructionType) => {
+    for (const constructionType of constructionsStandard) {
       const size = drawContructionSize(constructionType);
       const { x, y } = this.xAndYFarOfConstructions(
         getRandomInt(1, this.screen.width - size.width),
@@ -342,7 +341,7 @@ export class SimulacaoUpgradeComponent
           )
         )
       );
-    });
+    }
     for (let i = 1; i <= this.initialNumberOfConstructions; i++) {
       const type: ConstructionTypeEnum = getRandomInt(0, 4);
       const size = drawContructionSize(type);
@@ -375,14 +374,14 @@ export class SimulacaoUpgradeComponent
       this.context.clearRect(0, 0, this.screen.width, this.screen.height);
 
       //process constructions
-      this.constructions.forEach((construction) => {
+      for (const construction of this.constructions) {
         if (new Date().getSeconds() % 10 === 0) {
           construction.increasesResources();
         }
-      });
+      }
 
       //render preys
-      this.preys.forEach((prey) => {
+      for (const prey of this.preys) {
         // prey die
         if (prey.thirst >= 100 || prey.hungry >= 100) {
           this.dieBoid(prey, 'prey');
@@ -450,12 +449,12 @@ export class SimulacaoUpgradeComponent
         }
         prey.walkAStep();
         this.drawPrey(prey);
-      });
+      }
 
       //render predators
       this.context.setLineDash([0, 0]);
       this.context.strokeStyle = '#0d0d0d';
-      this.predators.forEach((predator) => {
+      for (const predator of this.predators) {
         if (predator.thirst >= 100 || predator.hungry >= 100) {
           this.dieBoid(predator, 'predator');
           return;
@@ -504,7 +503,7 @@ export class SimulacaoUpgradeComponent
         }
         predator.walkAStep();
         this.drawPredator(predator);
-      });
+      }
 
       //render routes
       if (this.config.showRoutesPreys) {
@@ -615,7 +614,7 @@ export class SimulacaoUpgradeComponent
 
   public contructionRender() {
     this.context.fillStyle = '#0d0d0d';
-    this.constructions.forEach((construction) => {
+    for (const construction of this.constructions) {
       this.context.drawImage(
         this.images[construction.type],
         construction.x,
@@ -632,7 +631,7 @@ export class SimulacaoUpgradeComponent
           construction.y
         );
       }
-    });
+    }
   }
 
   public showFrameRate() {
@@ -644,19 +643,19 @@ export class SimulacaoUpgradeComponent
 
   public drawRoutesBoids(boids: Boid[]) {
     this.context.setLineDash([0, 0]);
-    boids.forEach((boid) => {
+    for (const boid of boids) {
       this.context.strokeStyle = boid.color;
       this.context.beginPath();
       let x = boid.x;
       let y = boid.y;
       this.context.moveTo(x, y);
-      boid.steps.forEach((step) => {
+      for (const step of boid.steps) {
         x += step.distance_x * boid.velocity;
         y += step.distance_y * boid.velocity;
         this.context.lineTo(x, y);
-      });
+      }
       this.context.stroke();
-    });
+    }
   }
 
   public drawVisionBoid(boid: Boid) {

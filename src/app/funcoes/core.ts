@@ -6,7 +6,7 @@ export function calcularQuantidadeArray(
   ordenar = true
 ) {
   let arrayQuantidade: { [chave: string]: any; Quantidade: number }[] = [];
-  array.forEach((element) => {
+  for (const element of array) {
     if (element[propriedadeParaSomar] != null) {
       arrayQuantidade.push({
         [chave]: element[propriedadeParaSomar],
@@ -22,7 +22,7 @@ export function calcularQuantidadeArray(
           .length,
       });
     }
-  });
+  }
   //tirando elementos repetidos
   let dicionario: { [chave: string]: any; Quantidade: number }[] = [];
   arrayQuantidade.forEach((element, index) => {
@@ -67,17 +67,17 @@ export function misturarCoresRGB(p: number, c0: string, c1: string) {
     x = alpha1 || alpha2,
     j = x
       ? ',' +
-        (!alpha1
-          ? alpha2
-          : !alpha2
+      (!alpha1
+        ? alpha2
+        : !alpha2
           ? alpha1
           : Math.abs(
-              Math.round(
-                (parseFloat(alpha1) * P + parseFloat(alpha2) * p) * 1000
-              )
-            ) /
-              1000 +
-            ')')
+            Math.round(
+              (parseFloat(alpha1) * P + parseFloat(alpha2) * p) * 1000
+            )
+          ) /
+          1000 +
+          ')')
       : ')';
   return (
     'rgb' +
@@ -87,7 +87,7 @@ export function misturarCoresRGB(p: number, c0: string, c1: string) {
       Math.abs(
         Math.round(
           parseInt(cor1[3] == 'a' ? cor1.slice(5) : cor1.slice(4)) * P +
-            parseInt(cor4[3] == 'a' ? cor4.slice(5) : cor4.slice(4)) * p
+          parseInt(cor4[3] == 'a' ? cor4.slice(5) : cor4.slice(4)) * p
         )
       )
     ) +
