@@ -26,11 +26,6 @@ export function sortearTipoAlimento(): AlimentoTipo {
  * @returns Sorteia uma direcao tendo como base os ultimos passos dados
  */
 export function sortearDirecao(ultimosPassosDados: Passo[]): Direcao {
-  // if (ultimosPassosDados.length > 3) {
-  //   let penultimo = ultimosPassosDados[ultimosPassosDados.length - 2].direcao;
-  //   let antipenultimo =
-  //     ultimosPassosDados[ultimosPassosDados.length - 3].direcao;
-  // }
   if (ultimosPassosDados.length > 0) {
     let ultimo = ultimosPassosDados[ultimosPassosDados.length - 1].direcao;
     let possiveisDirecoes: Direcao[];
@@ -125,7 +120,6 @@ export function sortearDirecao(ultimosPassosDados: Passo[]): Direcao {
  */
 export function sortearTamanhoDoPasso(): number {
   return 1;
-  // return getRandomInt(1, 11);
 }
 
 /**
@@ -215,8 +209,7 @@ export function randn_bm() {
   let u = 0;
   while (u === 0) u = Math.random(); //Converting [0,1) to (0,1)
   while (v === 0) v = Math.random();
-  let result = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
-  return result;
+  return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
 }
 
 /**
@@ -270,7 +263,12 @@ export function maxResourceConstruction(
   switch (constructionType) {
     case ConstructionTypeEnum.Lake:
       return getRandomInt(size * 10, size * 15);
-
+    case ConstructionTypeEnum.Bush:
+      return getRandomInt(size * 5, size * 10);
+    case ConstructionTypeEnum.Tree:
+      return getRandomInt(size * 10, size * 15);
+    case ConstructionTypeEnum.Rock:
+      return getRandomInt(size * 5, size * 10);
     default:
       return getRandomInt(size * 2, size * 4);
   }
@@ -279,10 +277,11 @@ export function maxResourceConstruction(
 /**
  *
  * @param contructionType type of contruction
- * @returns reource rate for the respective construction
+ * @returns resource rate for the respective construction
  */
 export function drawResourceRate(
   contructionType: ConstructionTypeEnum
 ): number {
+  console.log(contructionType);
   return Math.abs(randn_bm());
 }

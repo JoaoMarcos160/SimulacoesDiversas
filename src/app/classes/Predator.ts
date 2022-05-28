@@ -25,6 +25,7 @@ export default class Predator extends Boid {
     vision: number,
     hunger_rate: number,
     thirst_rate: number,
+    mating_rate: number,
     attack_range: number
   ) {
     super(
@@ -40,7 +41,8 @@ export default class Predator extends Boid {
       velocity,
       vision,
       hunger_rate,
-      thirst_rate
+      thirst_rate,
+      mating_rate
     );
     this._preys_eaten = 0;
     this._attack_range = attack_range;

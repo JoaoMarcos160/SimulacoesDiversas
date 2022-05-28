@@ -60,7 +60,7 @@ export function sleep(ms: number) {
  * @param c1 segunda cor em RGB ou RGBA
  * @returns retorna a mistura das cores
  */
-export function misturarCoresRGB(p: number, c0: string, c1: string) {
+export function mixColorsRGB(p: number, c0: string, c1: string) {
   var P = 1 - p,
     [cor1, cor2, cor3, alpha1] = c0.split(','),
     [cor4, cor5, cor6, alpha2] = c1.split(','),

@@ -2,7 +2,7 @@ import { AlimentoTipo } from '../enums/AlimentoTipoEnum';
 import { CausaDaMorte } from '../enums/CausaDaMorteEnum';
 import { Direcao } from '../enums/DirecaoEnum';
 import { StatusWalker } from '../enums/StatusWalker';
-import { misturarCoresRGB } from '../funcoes/core';
+import { mixColorsRGB } from '../funcoes/core';
 import {
   getRandomInt,
   randn_bm,
@@ -169,7 +169,6 @@ export class Walker {
    */
   public get prontoParaReproduzir(): boolean {
     return this.vontadeDeReproducao >= 500 && this.alimentacao > 1000;
-    // return this.vontadeDeReproducao >= 1000 && this.alimentacao > 1000;
   }
 
   /**
@@ -276,7 +275,7 @@ export class Walker {
     id: number,
     width: number,
     height: number,
-    corDaBorda = 'rgb(0,0,0)',
+    corDaBorda: string,
     tamanho: number,
     velocidade: number,
     forcaDeVontade: number,
@@ -297,7 +296,7 @@ export class Walker {
     this._id = id;
     this._x = Math.max(width, 0);
     this._y = Math.max(height, 0);
-    this.corDaBorda = corDaBorda;
+    this.corDaBorda = corDaBorda || 'rgb(0,0,0)';
     this._corInicial = corDaBorda;
     this.tamanho = tamanho;
     this._velocidade = velocidade;
@@ -312,9 +311,6 @@ export class Walker {
   }
 
   /**
-   *
-   * @param alimentos Lista de alimentos disponíveis
-   *
    * @returns Faz o walker começar a andar colocando ele num loop de setInterval que se repete na sua velocidade
    */
   comecarAndar() {
@@ -404,7 +400,7 @@ export class Walker {
       }
 
       if (this._numeroDeCiclos % 10 === 0) {
-        this.corDaBorda = misturarCoresRGB(
+        this.corDaBorda = mixColorsRGB(
           parseFloat((1 / this.velocidade).toFixed(3)),
           this.corDaBorda,
           'rgb(255,255,255)'
@@ -578,7 +574,6 @@ export class Walker {
       for (let i = 0; i < qtdPassos; i++) {
         this.acrescentarPassos(Direcao.CimaEsquerda, this.tamanhoDoPasso);
       }
-      return;
     }
   }
 
@@ -665,11 +660,10 @@ export class Walker {
     walkers: Walker[]
   ): { walker: Walker; distancia: number } | null {
     let possiveisParceiros: { walker: Walker; distancia: number }[] = [];
-    for (let i = 0; i < walkers.length; i++) {
-      const walker = walkers[i];
+    for (const walker of walkers) {
       const distancia = Math.hypot(
-        walkers[i].x - this.x,
-        walkers[i].y - this.y
+        walker.x - this.x,
+        walker.y - this.y
       );
 
       if (
@@ -711,11 +705,11 @@ export class Walker {
    */
   private parceiroBuscadoAindaExiste(walkers: Walker[]): boolean {
     if (this._parceiroSendoBuscado != null) {
-      for (let i = 0; i < walkers.length; i++) {
+      for (const walker of walkers) {
         if (
-          walkers[i].id === this._parceiroSendoBuscado.id &&
-          walkers[i].prontoParaReproduzir &&
-          walkers[i]._causaDaMorte == null
+          walker.id === this._parceiroSendoBuscado.id &&
+          walker.prontoParaReproduzir &&
+          walker._causaDaMorte == null
         ) {
           return true;
         }
@@ -741,14 +735,14 @@ export class Walker {
     this._vontadeDeReproducao = 0;
     parceira._vontadeDeReproducao = 0;
 
-    let quantidadeDeFilhos = Math.max(1, Math.round(Math.abs(randn_bm())));
+    const quantidadeDeFilhos = Math.max(1, Math.round(Math.abs(randn_bm())));
     console.log(
       'Número de filhos entre ' +
-        this.id +
-        ' e ' +
-        parceira.id +
-        ': ' +
-        quantidadeDeFilhos
+      this.id +
+      ' e ' +
+      parceira.id +
+      ': ' +
+      quantidadeDeFilhos
     );
     this._numeroDeFilhos += quantidadeDeFilhos;
     parceira._numeroDeFilhos += quantidadeDeFilhos;
@@ -758,7 +752,7 @@ export class Walker {
           Walker.walkers.length + Walker.walkersMortos.length + 1,
           this.x,
           this.y,
-          misturarCoresRGB(0.5, this.corInicial, parceira.corInicial),
+          mixColorsRGB(0.5, this.corInicial, parceira.corInicial),
           getRandomInt(
             Math.min(this.tamanho, parceira.tamanho),
             Math.max(this.tamanho, parceira.tamanho)

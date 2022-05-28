@@ -1,4 +1,5 @@
 import { ConstructionTypeEnum } from '../enums/ContructionTypeEnum';
+import { mixColorsRGB } from '../funcoes/core';
 import { getRandomInt, randn_bm } from '../funcoes/sorteios';
 import Construction from './Contruction';
 import Step from './Step';
@@ -20,8 +21,10 @@ export default class Boid {
   private _steps: Step[] = [];
   private _hungry: number;
   private _thirst: number;
+  private _mating: number;
   private _hunger_rate: number;
   private _thirst_rate: number;
+  private _mating_rate: number;
 
   public get id(): number {
     return this._id;
@@ -103,12 +106,24 @@ export default class Boid {
     this._thirst = Math.max(0, Math.min(100, value));
   }
 
+  public get mating(): number {
+    return this._mating;
+  }
+
+  public set mating(value: number) {
+    this._mating = Math.max(0, Math.min(100, value));
+  }
+
   public get hunger_rate(): number {
     return this._hunger_rate;
   }
 
   public get thirst_rate(): number {
     return this._thirst_rate;
+  }
+
+  public get mating_rate(): number {
+    return this._mating_rate;
   }
 
   constructor(
@@ -124,7 +139,8 @@ export default class Boid {
     velocity: number,
     vision: number,
     hunger_rate: number,
-    thirst_rate: number
+    thirst_rate: number,
+    mating_rate: number
   ) {
     this._id = id;
     this._width = width;
@@ -141,6 +157,7 @@ export default class Boid {
     this._thirst = 0;
     this._hunger_rate = hunger_rate;
     this._thirst_rate = thirst_rate;
+    this._mating_rate = mating_rate;
   }
 
   private walk(x: number, y: number) {
@@ -149,6 +166,7 @@ export default class Boid {
 
     this.increasesHunger();
     this.increasesThirst();
+    this.increasesMating();
   }
 
   public addStep(step: Step) {
@@ -188,9 +206,10 @@ export default class Boid {
         .filter((a) => a.resource > 0)
         .sort((a, b) => (this.distanceOf(a) < this.distanceOf(b) ? -1 : 1))[0];
     }
-    return constructionsNearby.sort((a, b) =>
+    constructionsNearby.sort((a, b) =>
       this.distanceOf(a) < this.distanceOf(b) ? -1 : 1
-    )[0];
+    );
+    return constructionsNearby[0];
   }
 
   public boidsNearby(boids: Boid[], sorted: boolean): Boid[] {
@@ -216,8 +235,19 @@ export default class Boid {
     const dx = this.x - coordinate.x;
     const dy = this.y - coordinate.y;
 
-    const x_inverter = dx < 0 ? 1 : dx > 0 ? -1 : 0;
-    let y_inverter: 1 | -1 | 0 = dy < 0 ? 1 : dy > 0 ? -1 : 0;
+    let x_inverter = 0;
+    let y_inverter = 0;
+    if (dx < 0) {
+      x_inverter = 1;
+    } else if (dx > 0) {
+      x_inverter = -1;
+    }
+
+    if (dy < 0) {
+      y_inverter = 1;
+    } else if (dy > 0) {
+      y_inverter = -1;
+    }
 
     let stepsToContruction = Math.floor(Math.abs(dx)) / this._velocity;
     const sizeStepY = Math.abs(dy / dx);
@@ -241,6 +271,10 @@ export default class Boid {
 
   private increasesThirst() {
     this.thirst += this._thirst_rate * 0.001;
+  }
+
+  private increasesMating() {
+    this.mating += this._mating_rate * 0.001;
   }
 
   public drinkWater() {
@@ -281,6 +315,26 @@ export default class Boid {
     }
   }
 
+  public mate(partner: Boid): Boid[] {
+    const quantityChildres = Math.max(1, Math.round(Math.abs(randn_bm())));
+    const children = [];
+    for (let i = 0; i < quantityChildres; i++) {
+      const newBoid = new Boid(getRandomInt(Number.MIN_SAFE_INTEGER, Number.MIN_SAFE_INTEGER),
+        Boid.mergeValuesOfGene(this.width, partner.width),
+        Boid.mergeValuesOfGene(this.heigth, partner.heigth),
+        this.id, partner.id, this.x, this.y, Boid.mergeValuesOfGene(this.size, partner.size),
+        mixColorsRGB(0.5, this.color, partner.color),
+        Boid.mergeValuesOfGene(this.velocity, partner.velocity),
+        Boid.mergeValuesOfGene(this.vision, partner.vision),
+        Boid.mergeValuesOfGene(this.hunger_rate, partner.hunger_rate),
+        Boid.mergeValuesOfGene(this.thirst_rate, partner.thirst_rate),
+        Boid.mergeValuesOfGene(this.mating_rate, partner.mating_rate),
+      );
+      children.push(newBoid);
+    }
+    return children;
+  }
+
   public static findEquationOfALine(
     x1: number,
     y1: number,
@@ -292,5 +346,10 @@ export default class Boid {
     return `${m} * x + ${b}`;
   }
 
-  //TODO: Fazer eles se reproduzirem passando os genes adiante
+  public static mergeValuesOfGene(value1: number, value2: number): number {
+    return getRandomInt(
+      Math.min(value1, value2),
+      Math.max(value1, value2)
+    );
+  }
 }

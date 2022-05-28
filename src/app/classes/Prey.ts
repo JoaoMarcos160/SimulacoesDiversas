@@ -14,7 +14,8 @@ export default class Prey extends Boid {
     velocity: number,
     vision: number,
     hunger_rate: number,
-    thirst_rate: number
+    thirst_rate: number,
+    mating_rate: number
   ) {
     super(
       id,
@@ -29,7 +30,8 @@ export default class Prey extends Boid {
       velocity,
       vision,
       hunger_rate,
-      thirst_rate
+      thirst_rate,
+      mating_rate
     );
   }
 

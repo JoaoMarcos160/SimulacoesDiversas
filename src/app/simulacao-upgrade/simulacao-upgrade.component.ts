@@ -129,92 +129,14 @@ export class SimulacaoUpgradeComponent
 
   constructor(
     private route: ActivatedRoute,
-    private localStorage: LocalStorageService
-  ) {
-    //get number of predators and preys
-    if (route.snapshot.params.predators) {
-      if (
-        route.snapshot.params.predators > 0 &&
-        route.snapshot.params.predators < 5000
-      ) {
-        this.initialNumberOfPredator = route.snapshot.params.predators;
-      }
-    }
-    if (route.snapshot.params.preys) {
-      if (
-        route.snapshot.params.preys > 0 &&
-        route.snapshot.params.preys < 5000
-      ) {
-        this.initialNumberOfPreys = route.snapshot.params.preys;
-      }
-    }
-
-    //load configuracoes
-    const configs = localStorage.get(this.keysLocalStorage.configs);
-    if (configs) {
-      this.config = configs;
-    } else {
-      localStorage.set(this.keysLocalStorage.configs, this.config);
-    }
-    const arrayPreys = localStorage.get(this.keysLocalStorage.arrayPreys);
-    if (arrayPreys) {
-      this.preys = arrayPreys;
-    } else {
-      this.createPreys();
-    }
-    const arrayPredators = localStorage.get(
-      this.keysLocalStorage.arrayPredators
-    );
-
-    if (arrayPredators) {
-      this.predators = arrayPredators;
-    } else {
-      this.createPreys();
-    }
-    const arrayConstructions = localStorage.get(
-      this.keysLocalStorage.arrayConstructions
-    );
-    console.log(arrayConstructions);
-    if (arrayConstructions) {
-      this.constructions = arrayConstructions;
-    } else {
-      this.createConstructions();
-    }
-
-    //control boid 1 (big black boid or if die, the first boid of array)
-    document.onkeydown = document.onkeyup = (e) => {
-      this.keysStates[e.key] = e.type == 'keydown';
-      let x = 0;
-      let y = 0;
-      if (keysDown.filter((key) => this.keysStates[key] === true).length > 0) {
-        y = 1;
-      } else if (
-        keysUp.filter((key) => this.keysStates[key] === true).length > 0
-      ) {
-        y = -1;
-      } else {
-        y = 0;
-      }
-
-      if (keysRight.filter((key) => this.keysStates[key] === true).length > 0) {
-        x = 1;
-      } else if (
-        keysLeft.filter((key) => this.keysStates[key] === true).length > 0
-      ) {
-        x = -1;
-      } else {
-        x = 0;
-      }
-
-      for (let i = 0; i < 10; i++) {
-        this.preys[0].addStep(new Step(x, y));
-      }
-    };
-  }
+    private localStorageService: LocalStorageService
+  ) { }
 
   ngOnInit(): void {
     console.log(this.screen);
-
+    this.getNumberOfPredatorsAndPreys();
+    this.loadConfigs();
+    this.setControls();
     this.loadImages();
   }
 
@@ -239,6 +161,86 @@ export class SimulacaoUpgradeComponent
 
   ngOnDestroy() {
     this.saveSection();
+  }
+
+  private getNumberOfPredatorsAndPreys() {
+    if (this.route.snapshot.params.predators) {
+      if (
+        this.route.snapshot.params.predators > 0 &&
+        this.route.snapshot.params.predators < 5000
+      ) {
+        this.initialNumberOfPredator = this.route.snapshot.params.predators;
+      }
+    }
+    if (this.route.snapshot.params.preys) {
+      if (
+        this.route.snapshot.params.preys > 0 &&
+        this.route.snapshot.params.preys < 5000
+      ) {
+        this.initialNumberOfPreys = this.route.snapshot.params.preys;
+      }
+    }
+  }
+
+  private loadConfigs() {
+    const configs = this.localStorageService.get(this.keysLocalStorage.configs);
+    if (configs) {
+      this.config = configs;
+    } else {
+      this.localStorageService.set(this.keysLocalStorage.configs, this.config);
+    }
+    const arrayPreys = this.localStorageService.get(this.keysLocalStorage.arrayPreys);
+    if (arrayPreys) {
+      this.preys = arrayPreys;
+    } else {
+      this.createPreys();
+    }
+    const arrayPredators = this.localStorageService.get(
+      this.keysLocalStorage.arrayPredators
+    );
+
+    if (arrayPredators) {
+      this.predators = arrayPredators;
+    } else {
+      this.createPredators();
+    }
+    const arrayConstructions = this.localStorageService.get(
+      this.keysLocalStorage.arrayConstructions
+    );
+    console.log(arrayConstructions);
+    if (arrayConstructions) {
+      this.constructions = arrayConstructions;
+    } else {
+      this.createConstructions();
+    }
+  }
+
+  //control boid 1 (big black boid or if die, the first boid of array)
+  private setControls() {
+    document.onkeydown = document.onkeyup = (e) => {
+      this.keysStates[e.key] = e.type == 'keydown';
+      let x = 0;
+      let y = 0;
+      if (keysDown.filter((key) => this.keysStates[key] === true).length > 0) {
+        y = 1;
+      } else if (
+        keysUp.filter((key) => this.keysStates[key] === true).length > 0
+      ) {
+        y = -1;
+      }
+
+      if (keysRight.filter((key) => this.keysStates[key] === true).length > 0) {
+        x = 1;
+      } else if (
+        keysLeft.filter((key) => this.keysStates[key] === true).length > 0
+      ) {
+        x = -1;
+      }
+
+      for (let i = 0; i < 10; i++) {
+        this.preys[0].addStep(new Step(x, y));
+      }
+    };
   }
 
   public loadImages() {
@@ -280,7 +282,8 @@ export class SimulacaoUpgradeComponent
           0.5,
           (Math.abs(randn_bm()) + 10) * 50,
           Math.abs(randn_bm()) + getRandomInt(2, 10),
-          Math.abs(randn_bm()) + getRandomInt(2, 10)
+          Math.abs(randn_bm()) + getRandomInt(2, 10),
+          Math.abs(randn_bm()) + getRandomInt(2, 10),
         )
       );
     }
@@ -301,6 +304,7 @@ export class SimulacaoUpgradeComponent
           '#964b00',
           0.4,
           (Math.round(Math.abs(randn_bm())) + 10) * 50,
+          Math.abs(randn_bm()) + getRandomInt(2, 10),
           Math.abs(randn_bm()) + getRandomInt(2, 10),
           Math.abs(randn_bm()) + getRandomInt(2, 10),
           (Math.abs(randn_bm()) + 10) * 2
@@ -381,129 +385,10 @@ export class SimulacaoUpgradeComponent
       }
 
       //render preys
-      for (const prey of this.preys) {
-        // prey die
-        if (prey.thirst >= 100 || prey.hungry >= 100) {
-          this.dieBoid(prey, 'prey');
-          return;
-        }
-        //escape from predators
-        const nearbyPredators = prey.boidsNearby(this.predators, true);
-        if (nearbyPredators.length > 0) {
-          if (prey.distanceOf(nearbyPredators[0]) < getRandomInt(5, 15)) {
-            prey.escapeFromPredator(nearbyPredators[0]);
-          }
-        }
-
-        //avoid others boids
-        prey.avoidOtherBoids(this.preys, this.minDistanceBetweenBoids);
-
-        if (prey.steps.length < 1) {
-          //ever searching lakes or trees
-          if (prey.thirst > prey.hungry) {
-            const nearbyLake = prey.constructionNearest(
-              this.constructions,
-              true,
-              ConstructionTypeEnum.Lake
-            );
-            if (nearbyLake && nearbyLake.resource > prey.thirst_rate) {
-              if (
-                prey.distanceOf(nearbyLake) < this.distanceToConsumeResources
-              ) {
-                prey.drinkWater();
-                const index = this.constructions.indexOf(nearbyLake);
-                if (index > 0) {
-                  this.constructions[index].decreasesResources(
-                    prey.thirst_rate
-                  );
-                }
-              } else {
-                prey.tracePathToCoordinate(nearbyLake);
-              }
-            }
-          } else {
-            const nearbyTree = prey.constructionNearest(
-              this.constructions,
-              true,
-              ConstructionTypeEnum.Tree
-            );
-            if (nearbyTree && nearbyTree.resource > prey.hunger_rate) {
-              if (
-                prey.distanceOf(nearbyTree) < this.distanceToConsumeResources
-              ) {
-                prey.eatFood();
-                const index = this.constructions.indexOf(nearbyTree);
-                if (index > 0) {
-                  this.constructions[index].decreasesResources(
-                    prey.hunger_rate
-                  );
-                }
-              } else {
-                prey.tracePathToCoordinate(nearbyTree);
-              }
-            }
-          }
-          if (prey.steps.length < 1) {
-            prey.tracePathToRandomDirection();
-          }
-        }
-        prey.walkAStep();
-        this.drawPrey(prey);
-      }
+      this.renderPreys();
 
       //render predators
-      this.context.setLineDash([0, 0]);
-      this.context.strokeStyle = '#0d0d0d';
-      for (const predator of this.predators) {
-        if (predator.thirst >= 100 || predator.hungry >= 100) {
-          this.dieBoid(predator, 'predator');
-          return;
-        }
-        //avoid others boids
-        predator.avoidOtherBoids(this.predators, this.minDistanceBetweenBoids);
-        if (predator.steps.length < 1) {
-          //search lakes only thirst below 50
-          if (predator.thirst > 50) {
-            const nearbyLake = predator.constructionNearest(
-              this.constructions,
-              true,
-              ConstructionTypeEnum.Lake
-            );
-            if (nearbyLake && nearbyLake.resource > predator.thirst_rate) {
-              if (
-                predator.distanceOf(nearbyLake) <
-                this.distanceToConsumeResources
-              ) {
-                predator.drinkWater();
-                const index = this.constructions.indexOf(nearbyLake);
-                if (index > 0) {
-                  this.constructions[index].decreasesResources(
-                    predator.thirst_rate
-                  );
-                }
-              } else {
-                predator.tracePathToCoordinate(nearbyLake);
-              }
-            }
-          } else if (predator.hungry > 50) {
-            const preys = predator.boidsNearby(this.preys, false);
-            if (preys.length > 0) {
-              const preyNearby = preys.sort((a, b) =>
-                predator.distanceOf(a) < predator.distanceOf(b) ? -1 : 1
-              )[0];
-              if (predator.distanceOf(preyNearby) < predator.attack_range) {
-                predator.eatPrey();
-                this.dieBoid(preyNearby, 'prey');
-              }
-              predator.tracePathToCoordinate(preyNearby, 50);
-            }
-          }
-          predator.clearSteps();
-          predator.tracePathToRandomDirection();
-        }
-        predator.walkAStep();
-        this.drawPredator(predator);
-      }
+      this.renderPredators();
 
       //render routes
       if (this.config.showRoutesPreys) {
@@ -532,6 +417,133 @@ export class SimulacaoUpgradeComponent
     }, this.velocity);
     if (this.config.showFrameRate) {
       this.showFrameRate();
+    }
+  }
+
+  private renderPreys(): void {
+    for (const prey of this.preys) {
+      // prey die
+      if (prey.thirst >= 100 || prey.hungry >= 100) {
+        this.dieBoid(prey, 'prey');
+        return;
+      }
+      //escape from predators
+      const nearbyPredators = prey.boidsNearby(this.predators, true);
+      if (nearbyPredators.length > 0) {
+        if (prey.distanceOf(nearbyPredators[0]) < getRandomInt(5, 15)) {
+          prey.escapeFromPredator(nearbyPredators[0]);
+        }
+      }
+
+      //avoid others boids
+      prey.avoidOtherBoids(this.preys, this.minDistanceBetweenBoids);
+
+      if (prey.steps.length < 1) {
+        //ever searching lakes or trees
+        if (prey.thirst > prey.hungry) {
+          const nearbyLake = prey.constructionNearest(
+            this.constructions,
+            true,
+            ConstructionTypeEnum.Lake
+          );
+          if (nearbyLake && nearbyLake.resource > prey.thirst_rate) {
+            if (
+              prey.distanceOf(nearbyLake) < this.distanceToConsumeResources
+            ) {
+              prey.drinkWater();
+              const index = this.constructions.indexOf(nearbyLake);
+              if (index > 0) {
+                this.constructions[index].decreasesResources(
+                  prey.thirst_rate
+                );
+              }
+            } else {
+              prey.tracePathToCoordinate(nearbyLake);
+            }
+          }
+        } else {
+          const nearbyTree = prey.constructionNearest(
+            this.constructions,
+            true,
+            ConstructionTypeEnum.Tree
+          );
+          if (nearbyTree && nearbyTree.resource > prey.hunger_rate) {
+            if (
+              prey.distanceOf(nearbyTree) < this.distanceToConsumeResources
+            ) {
+              prey.eatFood();
+              const index = this.constructions.indexOf(nearbyTree);
+              if (index > 0) {
+                this.constructions[index].decreasesResources(
+                  prey.hunger_rate
+                );
+              }
+            } else {
+              prey.tracePathToCoordinate(nearbyTree);
+            }
+          }
+        }
+        if (prey.steps.length < 1) {
+          prey.tracePathToRandomDirection();
+        }
+      }
+      prey.walkAStep();
+      this.drawPrey(prey);
+    }
+  }
+
+  private renderPredators(): void {
+    this.context.setLineDash([0, 0]);
+    this.context.strokeStyle = '#0d0d0d';
+    for (const predator of this.predators) {
+      if (predator.thirst >= 100 || predator.hungry >= 100) {
+        this.dieBoid(predator, 'predator');
+        return;
+      }
+      //avoid others boids
+      predator.avoidOtherBoids(this.predators, this.minDistanceBetweenBoids);
+      if (predator.steps.length < 1) {
+        //search lakes only thirst below 50
+        if (predator.thirst > 50) {
+          const nearbyLake = predator.constructionNearest(
+            this.constructions,
+            true,
+            ConstructionTypeEnum.Lake
+          );
+          if (nearbyLake && nearbyLake.resource > predator.thirst_rate) {
+            if (
+              predator.distanceOf(nearbyLake) <
+              this.distanceToConsumeResources
+            ) {
+              predator.drinkWater();
+              const index = this.constructions.indexOf(nearbyLake);
+              if (index > 0) {
+                this.constructions[index].decreasesResources(
+                  predator.thirst_rate
+                );
+              }
+            } else {
+              predator.tracePathToCoordinate(nearbyLake);
+            }
+          }
+        } else if (predator.hungry > 50) {
+          const preys = predator.boidsNearby(this.preys, false);
+          if (preys.length > 0) {
+            const preyNearby = preys.sort((a, b) =>
+              predator.distanceOf(a) < predator.distanceOf(b) ? -1 : 1
+            )[0];
+            if (predator.distanceOf(preyNearby) < predator.attack_range) {
+              predator.eatPrey();
+              this.dieBoid(preyNearby, 'prey');
+            }
+            predator.tracePathToCoordinate(preyNearby, 50);
+          }
+        }
+        predator.clearSteps();
+        predator.tracePathToRandomDirection();
+      }
+      predator.walkAStep();
+      this.drawPredator(predator);
     }
   }
 
@@ -777,13 +789,13 @@ export class SimulacaoUpgradeComponent
 
   public handleConfigs(key: string, value: any) {
     this.config[key] = value;
-    this.localStorage.set(this.keysLocalStorage.configs, this.config);
+    this.localStorageService.set(this.keysLocalStorage.configs, this.config);
   }
 
   public saveSection() {
-    this.localStorage.set(this.keysLocalStorage.arrayPreys, this.preys);
-    this.localStorage.set(this.keysLocalStorage.arrayPredators, this.predators);
-    this.localStorage.set(
+    this.localStorageService.set(this.keysLocalStorage.arrayPreys, this.preys);
+    this.localStorageService.set(this.keysLocalStorage.arrayPredators, this.predators);
+    this.localStorageService.set(
       this.keysLocalStorage.arrayConstructions,
       this.constructions
     );
