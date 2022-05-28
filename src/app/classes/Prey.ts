@@ -2,11 +2,11 @@ import Boid from './Boid';
 
 export default class Prey extends Boid {
   constructor(
-    id: number,
+    id: string,
     width: number,
     height: number,
-    id_father: number,
-    id_mother: number,
+    id_father: string,
+    id_mother: string,
     x: number,
     y: number,
     size: number,
@@ -54,5 +54,29 @@ export default class Prey extends Boid {
     const x = this.x + 150 * x_inverter;
     const y = eval(equation);
     this.tracePathToCoordinate({ x, y }, 200);
+  }
+
+  public mate(partner: Prey): Prey[] {
+    const children: Boid[] = super.mate(partner);
+    const preys: Prey[] = [];
+    children.forEach((child: Boid) => {
+      preys.push(new Prey(
+        child.id,
+        child.width,
+        child.height,
+        child.id_father,
+        child.id_mother,
+        child.x,
+        child.y,
+        child.size,
+        child.color,
+        child.velocity,
+        child.vision,
+        child.hunger_rate,
+        child.thirst_rate,
+        child.mating_rate
+      ));
+    });
+    return preys;
   }
 }

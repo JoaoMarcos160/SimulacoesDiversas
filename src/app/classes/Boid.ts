@@ -1,15 +1,16 @@
+import { uid } from 'uid';
 import { ConstructionTypeEnum } from '../enums/ContructionTypeEnum';
 import { mixColorsRGB } from '../funcoes/core';
-import { getRandomInt, randn_bm } from '../funcoes/sorteios';
+import { getRandomInt, getRandomNumber, randn_bm } from '../funcoes/sorteios';
 import Construction from './Contruction';
 import Step from './Step';
 
 export default class Boid {
-  private readonly _id: number;
+  private readonly _id: string;
   private readonly _width: number;
   private readonly _height: number;
-  private readonly _id_father: number;
-  private readonly _id_mother: number;
+  private readonly _id_father: string;
+  private readonly _id_mother: string;
   private _x: number;
   private _y: number;
   private _color: string;
@@ -26,7 +27,7 @@ export default class Boid {
   private _thirst_rate: number;
   private _mating_rate: number;
 
-  public get id(): number {
+  public get id(): string {
     return this._id;
   }
 
@@ -34,15 +35,15 @@ export default class Boid {
     return this._width - this.size;
   }
 
-  public get heigth(): number {
+  public get height(): number {
     return this._height - this.size;
   }
 
-  public get id_father(): number {
+  public get id_father(): string {
     return this._id_father;
   }
 
-  public get id_mother(): number {
+  public get id_mother(): string {
     return this._id_mother;
   }
 
@@ -59,7 +60,7 @@ export default class Boid {
   }
   public set y(value: number) {
     this._last_y = this._y;
-    this._y = Math.min(Math.max(value, 0), this.heigth);
+    this._y = Math.min(Math.max(value, 0), this.height);
   }
 
   public get size(): number {
@@ -90,6 +91,10 @@ export default class Boid {
     return this._steps;
   }
 
+  public get quantitySteps(): number {
+    return this.steps.length;
+  }
+
   public get hungry(): number {
     return this._hungry;
   }
@@ -104,6 +109,10 @@ export default class Boid {
 
   public set thirst(value: number) {
     this._thirst = Math.max(0, Math.min(100, value));
+  }
+
+  public get readyToMate(): boolean {
+    return this.mating > 90;
   }
 
   public get mating(): number {
@@ -127,11 +136,11 @@ export default class Boid {
   }
 
   constructor(
-    id: number,
+    id: string,
     width: number,
     height: number,
-    id_father: number,
-    id_mother: number,
+    id_father: string,
+    id_mother: string,
     x: number,
     y: number,
     size: number,
@@ -155,6 +164,7 @@ export default class Boid {
     this._vision = vision;
     this._hungry = 0;
     this._thirst = 0;
+    this._mating = 0;
     this._hunger_rate = hunger_rate;
     this._thirst_rate = thirst_rate;
     this._mating_rate = mating_rate;
@@ -231,7 +241,7 @@ export default class Boid {
   public tracePathToCoordinate(
     coordinate: { x: number; y: number },
     maxSteps: number = 100
-  ) {
+  ): void {
     const dx = this.x - coordinate.x;
     const dy = this.y - coordinate.y;
 
@@ -265,26 +275,26 @@ export default class Boid {
     }
   }
 
-  private increasesHunger() {
-    this.hungry += this._hunger_rate * 0.001;
+  private increasesHunger(multiplier: number = 1) {
+    this.hungry += this._hunger_rate * (this.size / 10) * multiplier * 0.001;
   }
 
-  private increasesThirst() {
-    this.thirst += this._thirst_rate * 0.001;
+  private increasesThirst(multiplier: number = 1) {
+    this.thirst += this._thirst_rate * (this.size / 10) * multiplier * 0.001;
   }
 
   private increasesMating() {
-    this.mating += this._mating_rate * 0.001;
+    this.mating += this._mating_rate * (this.size / 10) * 0.001;
   }
 
   public drinkWater() {
     this.thirst -= 15;
   }
 
-  public tracePathToRandomDirection() {
+  public tracePathToRandomDirection(maxSteps = 15) {
     this.tracePathToCoordinate(
-      { x: getRandomInt(0, this.width), y: getRandomInt(0, this.heigth) },
-      15
+      { x: getRandomInt(0, this.width), y: getRandomInt(0, this.height) },
+      maxSteps
     );
   }
 
@@ -319,12 +329,17 @@ export default class Boid {
     const quantityChildres = Math.max(1, Math.round(Math.abs(randn_bm())));
     const children = [];
     for (let i = 0; i < quantityChildres; i++) {
-      const newBoid = new Boid(getRandomInt(Number.MIN_SAFE_INTEGER, Number.MIN_SAFE_INTEGER),
+      const newBoid = new Boid(
+        uid(this.id.length),
         Boid.mergeValuesOfGene(this.width, partner.width),
-        Boid.mergeValuesOfGene(this.heigth, partner.heigth),
-        this.id, partner.id, this.x, this.y, Boid.mergeValuesOfGene(this.size, partner.size),
+        Boid.mergeValuesOfGene(this.height, partner.height),
+        this.id,
+        partner.id,
+        this.x,
+        this.y,
+        Boid.mergeValuesOfGene(this.size, partner.size),
         mixColorsRGB(0.5, this.color, partner.color),
-        Boid.mergeValuesOfGene(this.velocity, partner.velocity),
+        Boid.mergeValuesOfGene(this.velocity * 100, partner.velocity * 100) / 100,
         Boid.mergeValuesOfGene(this.vision, partner.vision),
         Boid.mergeValuesOfGene(this.hunger_rate, partner.hunger_rate),
         Boid.mergeValuesOfGene(this.thirst_rate, partner.thirst_rate),
@@ -332,6 +347,9 @@ export default class Boid {
       );
       children.push(newBoid);
     }
+    this.mating = 0;
+    partner.mating = 0;
+    this.increasesHunger(5);
     return children;
   }
 
@@ -347,7 +365,7 @@ export default class Boid {
   }
 
   public static mergeValuesOfGene(value1: number, value2: number): number {
-    return getRandomInt(
+    return getRandomNumber(
       Math.min(value1, value2),
       Math.max(value1, value2)
     );

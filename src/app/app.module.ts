@@ -14,6 +14,7 @@ import { DadoSimplesComponent } from './componentes/dado-simples/dado-simples.co
 import { SliderComponent } from './componentes/slider/slider.component';
 import { HomeComponent } from './home/home.component';
 import { SimulacaoUpgradeComponent } from './simulacao-upgrade/simulacao-upgrade.component';
+import { FormsModule } from '@angular/forms';
 
 @NgModule({
   declarations: [
@@ -30,8 +31,8 @@ import { SimulacaoUpgradeComponent } from './simulacao-upgrade/simulacao-upgrade
     HomeComponent,
     SimulacaoUpgradeComponent,
   ],
-  imports: [BrowserModule, AppRoutingModule],
+  imports: [BrowserModule, AppRoutingModule, FormsModule],
   providers: [],
   bootstrap: [AppComponent],
 })
-export class AppModule {}
+export class AppModule { }

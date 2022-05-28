@@ -16,6 +16,16 @@ export function getRandomInt(min: number, max: number) {
   return Math.floor(Math.random() * (max - min)) + min;
 }
 
+/**
+ *
+ * @param min Número mínimo, é incluído nos possíveis resultados
+ * @param max Número máximo, NÃO é incluído nos possíveis resultados
+ * @returns Retorna um número float, com base no máximo e mínimo
+ */
+export function getRandomNumber(min: number, max: number): number {
+  return Math.random() * (max - min) + min;
+}
+
 export function sortearTipoAlimento(): AlimentoTipo {
   return getRandomInt(1, 9);
 }
@@ -126,7 +136,7 @@ export function sortearTamanhoDoPasso(): number {
  *
  * @returns Sorteia uma cor no formato hexadecimal de 6 caracateres
  */
-export function sortearCorHex(): string {
+export function drawHexColor(): string {
   let hexadecimais = '0123456789ABCDEF';
   let cor = '#';
   // Pega um número aleatório no array acima
@@ -142,7 +152,7 @@ export function sortearCorHex(): string {
  *
  * @returns Retorna uma string de cor no formato RGB, ou seja, rgba(255,255,255,0.5)
  */
-export function sortearCorRGBA(): string {
+export function drawRGBAColor(): string {
   return `rgba(${Math.trunc(Math.random() * 255)}, ${Math.trunc(
     Math.random() * 255
   )}, ${Math.trunc(Math.random() * 255)}, ${Math.random()})`;
@@ -152,7 +162,7 @@ export function sortearCorRGBA(): string {
  *
  * @returns Retorna uma string de cor no formato RGB, ou seja, rgb(255,255,255)
  */
-export function sortearCorRGB(): string {
+export function drawRGBColor(): string {
   return `rgb(${Math.trunc(Math.random() * 255)}, ${Math.trunc(
     Math.random() * 255
   )}, ${Math.trunc(Math.random() * 255)})`;

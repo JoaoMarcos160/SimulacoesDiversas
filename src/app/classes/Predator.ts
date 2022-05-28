@@ -12,11 +12,11 @@ export default class Predator extends Boid {
   }
 
   constructor(
-    id: number,
+    id: string,
     width: number,
     height: number,
-    id_father: number,
-    id_mother: number,
+    id_father: string,
+    id_mother: string,
     x: number,
     y: number,
     size: number,
@@ -48,8 +48,34 @@ export default class Predator extends Boid {
     this._attack_range = attack_range;
   }
 
-  public eatPrey() {
+  public eatPrey(sizePrey: number): void {
     this._preys_eaten++;
-    this.hungry = this.hungry - 20;
+    this.hungry = this.hungry - 20 - sizePrey;
+  }
+
+
+  public mate(partner: Predator): Predator[] {
+    const children: Boid[] = super.mate(partner);
+    const predators: Predator[] = [];
+    children.forEach((child: Boid) => {
+      predators.push(new Predator(
+        child.id,
+        child.width,
+        child.height,
+        child.id_father,
+        child.id_mother,
+        child.x,
+        child.y,
+        child.size,
+        child.color,
+        child.velocity,
+        child.vision,
+        child.hunger_rate,
+        child.thirst_rate,
+        child.mating_rate,
+        Boid.mergeValuesOfGene(this.attack_range, partner.attack_range)
+      ));
+    });
+    return predators;
   }
 }

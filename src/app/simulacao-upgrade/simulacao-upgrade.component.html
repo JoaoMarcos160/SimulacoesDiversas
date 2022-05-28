@@ -3,6 +3,7 @@
     <img
       id="imgBackground"
       src="../../assets/grass.webp"
+      alt="Background"
       [width]="screen.width"
       [height]="screen.height"
     />
@@ -104,44 +105,61 @@
       <label>Show Resources</label>
       <br />
     </div>
+    <div class="input-configs">
+      <label>Time per cycle: {{ config.velocity / 1000 }}s</label>
+      <br />
+    </div>
+    <div class="input-configs">
+      <input
+        #rangeVelocity
+        id="rangeVelocity"
+        type="range"
+        min="0"
+        max="100"
+        [(ngModel)]="config.velocity"
+        (change)="changeVelocity()"
+      />
+      <br />
+    </div>
     <div class="fps">
       {{ config.showFrameRate ? frameRate + " FPS" : "" }}
     </div>
 
     <div class="input-configs">
       <input
-        #txtIdBoid
         id="txtIdBoid"
-        type="number"
+        type="text"
+        maxlength="4"
         placeholder="Enter an id"
+        [(ngModel)]="txtIdBoid"
         (keyup.enter)="toWatchBoid()"
       />
       <br />
       <input
-        #radioTypePrey
         id="radioTypePrey"
         name="typeBoid"
         type="radio"
         value="prey"
         checked
+        [(ngModel)]="choice"
       />
       <label for="radioTypePrey">Prey</label>
       <br />
       <input
-        #radioTypePredator
         id="radioTypePredator"
         name="typeBoid"
         type="radio"
         value="predator"
+        [(ngModel)]="choice"
       />
       <label for="radioTypePredator">Predator</label>
       <br />
       <input
-        #radioTypeConstruction
         id="radioTypeConstruction"
         name="typeBoid"
         type="radio"
         value="construction"
+        [(ngModel)]="choice"
       />
       <label for="radioTypeConstruction">Construction</label>
       <br />
@@ -149,6 +167,14 @@
       <button type="submit" (click)="unwatchBoid()">Unwatch</button>
     </div>
     <table *ngIf="watch">
+      <caption>
+        Propertys of boid
+        {{
+          watch.id
+        }}
+      </caption>
+      <th>Property</th>
+      <th>Value</th>
       <tr *ngFor="let obj of objKeys">
         <td>{{ obj.label }}</td>
         <td
@@ -172,6 +198,10 @@
       <tr>
         <td>Total Preys</td>
         <td>{{ totalPreys }}</td>
+      </tr>
+      <tr>
+        <td>Total Dead Preys</td>
+        <td>{{ totalDeadPreys }}</td>
       </tr>
     </table>
   </div>

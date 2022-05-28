@@ -10,7 +10,7 @@ import {
   sortearTamanhoDoPasso,
   sortearVelocidade,
   sortearForcaDeVontade,
-  sortearCorRGB,
+  drawRGBColor,
   sortearSexo,
   sortearLongevidade,
   sortearVelocidadeDeReproducao,
@@ -187,7 +187,7 @@ export class SimulacaoInicialComponent implements OnInit {
               this.totalEixoY * 0.95
             )
           ),
-          sortearCorRGB(),
+          drawRGBColor(),
           sortearTamanho(),
           sortearVelocidade(),
           sortearForcaDeVontade(),
