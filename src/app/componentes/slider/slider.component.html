@@ -8,7 +8,7 @@
     [min]="valorMin"
     [max]="valorMax"
     [value]="valorAtual"
-    ([ngModel])="(valorAtual)"
+    [(ngModel)]="valorAtual"
     (change)="emitirEventoChange(slider.value)"
   />
   <!-- (change)="emitirEventoChange($event)" -->
