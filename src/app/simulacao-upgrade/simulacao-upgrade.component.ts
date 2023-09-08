@@ -6,23 +6,23 @@ import {
   OnInit,
   ViewChild,
 } from '@angular/core';
-import Prey from '../classes/Prey';
+import { ActivatedRoute } from '@angular/router';
+import { uid } from 'uid';
+import Boid from '../classes/Boid';
 import Construction from '../classes/Contruction';
 import Predator from '../classes/Predator';
+import Prey from '../classes/Prey';
 import Step from '../classes/Step';
 import { ConstructionTypeEnum } from '../enums/ContructionTypeEnum';
 import {
   drawContructionSize,
+  drawRGBColor,
   drawResourceRate,
   getRandomInt,
   maxResourceConstruction,
   randn_bm,
-  drawRGBColor,
 } from '../funcoes/sorteios';
-import Boid from '../classes/Boid';
-import { ActivatedRoute } from '@angular/router';
 import { LocalStorageService } from '../services/local-storage.service';
-import { uid } from 'uid';
 
 const KEYS_DOWN = ['Down', 'ArrowDown', 'S', 's'];
 const KEYS_UP = ['Up', 'ArrowUp', 'W', 'w'];
@@ -57,7 +57,8 @@ const PREDATOR_THIRST_LEVEL_TO_SEARCH_LAKE: number = 25;
   styleUrls: ['./simulacao-upgrade.component.scss'],
 })
 export class SimulacaoUpgradeComponent
-  implements AfterViewInit, OnInit, OnDestroy {
+  implements AfterViewInit, OnInit, OnDestroy
+{
   @ViewChild('canvas')
   canvas: ElementRef<HTMLCanvasElement>;
 
@@ -101,8 +102,6 @@ export class SimulacaoUpgradeComponent
     return this.preys.length;
   }
 
-
-
   public config: {
     showFrameRate: boolean;
     showId: boolean;
@@ -115,17 +114,17 @@ export class SimulacaoUpgradeComponent
     showResources: boolean;
     velocity: number; //quanto menor mais rápido
   } = {
-      showFrameRate: true,
-      showId: true,
-      showRoutesPreys: false,
-      showRoutesPredators: false,
-      showRuler: false,
-      showGrid: false,
-      showVisionPreys: false,
-      showVisionPredators: false,
-      showResources: true,
-      velocity: 0,
-    };
+    showFrameRate: true,
+    showId: true,
+    showRoutesPreys: false,
+    showRoutesPredators: false,
+    showRuler: false,
+    showGrid: false,
+    showVisionPreys: false,
+    showVisionPredators: false,
+    showResources: true,
+    velocity: 0,
+  };
 
   public images: { [number: number]: any } = Object.keys(ConstructionTypeEnum)
     .filter((key) => /^\d+$/.test(key))
@@ -139,7 +138,7 @@ export class SimulacaoUpgradeComponent
   constructor(
     private route: ActivatedRoute,
     private localStorageService: LocalStorageService
-  ) { }
+  ) {}
 
   ngOnInit(): void {
     console.log(this.screen);
@@ -178,7 +177,8 @@ export class SimulacaoUpgradeComponent
         this.route.snapshot.queryParams.predators > 0 &&
         this.route.snapshot.queryParams.predators < 5000
       ) {
-        this.initialNumberOfPredator = this.route.snapshot.queryParams.predators;
+        this.initialNumberOfPredator =
+          this.route.snapshot.queryParams.predators;
       }
     }
     if (this.route.snapshot.queryParams.preys) {
@@ -198,7 +198,9 @@ export class SimulacaoUpgradeComponent
     } else {
       this.localStorageService.set(KEYS_LOCAL_STORAGE.configs, this.config);
     }
-    const arrayPreys = this.localStorageService.get(KEYS_LOCAL_STORAGE.arrayPreys);
+    const arrayPreys = this.localStorageService.get(
+      KEYS_LOCAL_STORAGE.arrayPreys
+    );
     if (arrayPreys) {
       this.preys = arrayPreys;
     } else {
@@ -237,7 +239,9 @@ export class SimulacaoUpgradeComponent
         y = -1;
       }
 
-      if (KEYS_RIGHT.filter((key) => this.keysStates[key] === true).length > 0) {
+      if (
+        KEYS_RIGHT.filter((key) => this.keysStates[key] === true).length > 0
+      ) {
         x = 1;
       } else if (
         KEYS_LEFT.filter((key) => this.keysStates[key] === true).length > 0
@@ -291,7 +295,7 @@ export class SimulacaoUpgradeComponent
           (Math.abs(randn_bm()) + 10) * 50,
           Math.abs(randn_bm()) + getRandomInt(2, 10),
           Math.abs(randn_bm()) + getRandomInt(2, 10),
-          Math.abs(randn_bm()) + getRandomInt(2, 10),
+          Math.abs(randn_bm()) + getRandomInt(2, 10)
         )
       );
     }
@@ -310,7 +314,7 @@ export class SimulacaoUpgradeComponent
           getRandomInt(1, this.screen.height),
           15,
           '#964b00',
-          0.40,
+          0.4,
           (Math.round(Math.abs(randn_bm())) + 10) * 50,
           Math.abs(randn_bm()) + getRandomInt(2, 10),
           Math.abs(randn_bm()) + getRandomInt(2, 10),
@@ -457,7 +461,9 @@ export class SimulacaoUpgradeComponent
         if (prey.readyToMate) {
           const nearbyPreys = prey.boidsNearby(this.preys, true) as Prey[];
           if (nearbyPreys.length > 0) {
-            if (prey.distanceOf(nearbyPreys[1]) < DISTANCE_TO_CONSUME_RESOURCES) {
+            if (
+              prey.distanceOf(nearbyPreys[1]) < DISTANCE_TO_CONSUME_RESOURCES
+            ) {
               const children = prey.mate(nearbyPreys[1]);
               this.preys.push(...children);
             } else {
@@ -473,9 +479,7 @@ export class SimulacaoUpgradeComponent
               ConstructionTypeEnum.Lake
             );
             if (nearbyLake && nearbyLake.resource > prey.thirst_rate) {
-              if (
-                prey.distanceOf(nearbyLake) < DISTANCE_TO_CONSUME_RESOURCES
-              ) {
+              if (prey.distanceOf(nearbyLake) < DISTANCE_TO_CONSUME_RESOURCES) {
                 prey.drinkWater();
                 const index = this.constructions.indexOf(nearbyLake);
                 if (index > 0) {
@@ -494,9 +498,7 @@ export class SimulacaoUpgradeComponent
               ConstructionTypeEnum.Tree
             );
             if (nearbyTree && nearbyTree.resource > prey.hunger_rate) {
-              if (
-                prey.distanceOf(nearbyTree) < DISTANCE_TO_CONSUME_RESOURCES
-              ) {
+              if (prey.distanceOf(nearbyTree) < DISTANCE_TO_CONSUME_RESOURCES) {
                 prey.eatFood();
                 const index = this.constructions.indexOf(nearbyTree);
                 if (index > 0) {
@@ -530,9 +532,15 @@ export class SimulacaoUpgradeComponent
       predator.avoidOtherBoids(this.predators, MIN_DISTANCE_BETWEEN_BOIDS);
       if (predator.quantitySteps < 1) {
         if (predator.readyToMate) {
-          const nearbyPredators = predator.boidsNearby(this.predators, true) as Predator[];
+          const nearbyPredators = predator.boidsNearby(
+            this.predators,
+            true
+          ) as Predator[];
           if (nearbyPredators.length > 0) {
-            if (predator.distanceOf(nearbyPredators[1]) < DISTANCE_TO_CONSUME_RESOURCES) {
+            if (
+              predator.distanceOf(nearbyPredators[1]) <
+              DISTANCE_TO_CONSUME_RESOURCES
+            ) {
               const children = predator.mate(nearbyPredators[1]);
               this.predators.push(...children);
             } else {
@@ -549,8 +557,7 @@ export class SimulacaoUpgradeComponent
             );
             if (nearbyLake && nearbyLake.resource > predator.thirst_rate) {
               if (
-                predator.distanceOf(nearbyLake) <
-                DISTANCE_TO_CONSUME_RESOURCES
+                predator.distanceOf(nearbyLake) < DISTANCE_TO_CONSUME_RESOURCES
               ) {
                 predator.drinkWater();
                 const index = this.constructions.indexOf(nearbyLake);
@@ -607,7 +614,7 @@ export class SimulacaoUpgradeComponent
   public extractKeys(
     obj: Boid | Construction
   ): { property: string; label: string }[] {
-    if (!!obj) {
+    if (obj) {
       return Object.keys(obj)
         .map((property: string) => {
           const key = property.replace(/^_/, '');
@@ -664,12 +671,7 @@ export class SimulacaoUpgradeComponent
 
   private drawBorderRedBoid(boid: Boid) {
     this.context.strokeStyle = 'rgb(255, 0, 0)';
-    this.context.strokeRect(
-      boid.x,
-      boid.y,
-      boid.size,
-      boid.size
-    );
+    this.context.strokeRect(boid.x, boid.y, boid.size, boid.size);
   }
 
   public mapRender() {
@@ -744,11 +746,7 @@ export class SimulacaoUpgradeComponent
 
   public drawGrid() {
     // draw horizontal lines
-    for (
-      let i = GRANULITY_GRID;
-      i < this.screen.width;
-      i += GRANULITY_GRID
-    ) {
+    for (let i = GRANULITY_GRID; i < this.screen.width; i += GRANULITY_GRID) {
       this.context.setLineDash([5, 3]);
       this.context.beginPath();
       this.context.moveTo(i, 0);
@@ -756,11 +754,7 @@ export class SimulacaoUpgradeComponent
       this.context.stroke();
     }
     // draw vertical lines
-    for (
-      let i = GRANULITY_GRID;
-      i < this.screen.height;
-      i += GRANULITY_GRID
-    ) {
+    for (let i = GRANULITY_GRID; i < this.screen.height; i += GRANULITY_GRID) {
       this.context.beginPath();
       this.context.moveTo(0, i);
       this.context.lineTo(this.screen.width, i);
@@ -846,7 +840,10 @@ export class SimulacaoUpgradeComponent
 
   public saveSection() {
     this.localStorageService.set(KEYS_LOCAL_STORAGE.arrayPreys, this.preys);
-    this.localStorageService.set(KEYS_LOCAL_STORAGE.arrayPredators, this.predators);
+    this.localStorageService.set(
+      KEYS_LOCAL_STORAGE.arrayPredators,
+      this.predators
+    );
     this.localStorageService.set(
       KEYS_LOCAL_STORAGE.arrayConstructions,
       this.constructions
