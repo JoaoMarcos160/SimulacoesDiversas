@@ -149,7 +149,8 @@ export default class Boid {
     vision: number,
     hunger_rate: number,
     thirst_rate: number,
-    mating_rate: number
+    mating_rate: number,
+    steps: Step[] = []
   ) {
     this._id = id;
     this._width = width;
@@ -168,6 +169,7 @@ export default class Boid {
     this._hunger_rate = hunger_rate;
     this._thirst_rate = thirst_rate;
     this._mating_rate = mating_rate;
+    this._steps = steps;
   }
 
   private walk(x: number, y: number) {
@@ -339,11 +341,12 @@ export default class Boid {
         this.y,
         Boid.mergeValuesOfGene(this.size, partner.size),
         mixColorsRGB(0.5, this.color, partner.color),
-        Boid.mergeValuesOfGene(this.velocity * 100, partner.velocity * 100) / 100,
+        Boid.mergeValuesOfGene(this.velocity * 100, partner.velocity * 100) /
+          100,
         Boid.mergeValuesOfGene(this.vision, partner.vision),
         Boid.mergeValuesOfGene(this.hunger_rate, partner.hunger_rate),
         Boid.mergeValuesOfGene(this.thirst_rate, partner.thirst_rate),
-        Boid.mergeValuesOfGene(this.mating_rate, partner.mating_rate),
+        Boid.mergeValuesOfGene(this.mating_rate, partner.mating_rate)
       );
       children.push(newBoid);
     }
@@ -365,9 +368,6 @@ export default class Boid {
   }
 
   public static mergeValuesOfGene(value1: number, value2: number): number {
-    return getRandomNumber(
-      Math.min(value1, value2),
-      Math.max(value1, value2)
-    );
+    return getRandomNumber(Math.min(value1, value2), Math.max(value1, value2));
   }
 }

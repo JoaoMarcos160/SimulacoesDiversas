@@ -1,4 +1,5 @@
 import Boid from './Boid';
+import Step from './Step';
 
 export default class Predator extends Boid {
   private _attack_range: number;
@@ -26,7 +27,9 @@ export default class Predator extends Boid {
     hunger_rate: number,
     thirst_rate: number,
     mating_rate: number,
-    attack_range: number
+    attack_range: number,
+    preys_eaten: number = 0,
+    steps: Step[] = []
   ) {
     super(
       id,
@@ -42,10 +45,11 @@ export default class Predator extends Boid {
       vision,
       hunger_rate,
       thirst_rate,
-      mating_rate
+      mating_rate,
+      steps
     );
-    this._preys_eaten = 0;
     this._attack_range = attack_range;
+    this._preys_eaten = preys_eaten;
   }
 
   public eatPrey(sizePrey: number): void {
@@ -53,28 +57,29 @@ export default class Predator extends Boid {
     this.hungry = this.hungry - 20 - sizePrey;
   }
 
-
   public mate(partner: Predator): Predator[] {
     const children: Boid[] = super.mate(partner);
     const predators: Predator[] = [];
     children.forEach((child: Boid) => {
-      predators.push(new Predator(
-        child.id,
-        child.width,
-        child.height,
-        child.id_father,
-        child.id_mother,
-        child.x,
-        child.y,
-        child.size,
-        child.color,
-        child.velocity,
-        child.vision,
-        child.hunger_rate,
-        child.thirst_rate,
-        child.mating_rate,
-        Boid.mergeValuesOfGene(this.attack_range, partner.attack_range)
-      ));
+      predators.push(
+        new Predator(
+          child.id,
+          child.width,
+          child.height,
+          child.id_father,
+          child.id_mother,
+          child.x,
+          child.y,
+          child.size,
+          child.color,
+          child.velocity,
+          child.vision,
+          child.hunger_rate,
+          child.thirst_rate,
+          child.mating_rate,
+          Boid.mergeValuesOfGene(this.attack_range, partner.attack_range)
+        )
+      );
     });
     return predators;
   }

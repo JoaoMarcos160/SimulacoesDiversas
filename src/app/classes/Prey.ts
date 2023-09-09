@@ -1,39 +1,39 @@
 import Boid from './Boid';
 
 export default class Prey extends Boid {
-  constructor(
-    id: string,
-    width: number,
-    height: number,
-    id_father: string,
-    id_mother: string,
-    x: number,
-    y: number,
-    size: number,
-    color: string,
-    velocity: number,
-    vision: number,
-    hunger_rate: number,
-    thirst_rate: number,
-    mating_rate: number
-  ) {
-    super(
-      id,
-      width,
-      height,
-      id_father,
-      id_mother,
-      x,
-      y,
-      size,
-      color,
-      velocity,
-      vision,
-      hunger_rate,
-      thirst_rate,
-      mating_rate
-    );
-  }
+  // constructor(
+  //   id: string,
+  //   width: number,
+  //   height: number,
+  //   id_father: string,
+  //   id_mother: string,
+  //   x: number,
+  //   y: number,
+  //   size: number,
+  //   color: string,
+  //   velocity: number,
+  //   vision: number,
+  //   hunger_rate: number,
+  //   thirst_rate: number,
+  //   mating_rate: number
+  // ) {
+  //   super(
+  //     id,
+  //     width,
+  //     height,
+  //     id_father,
+  //     id_mother,
+  //     x,
+  //     y,
+  //     size,
+  //     color,
+  //     velocity,
+  //     vision,
+  //     hunger_rate,
+  //     thirst_rate,
+  //     mating_rate
+  //   );
+  // }
 
   public eatFood() {
     this.hungry = this.hungry - 15;
@@ -60,22 +60,24 @@ export default class Prey extends Boid {
     const children: Boid[] = super.mate(partner);
     const preys: Prey[] = [];
     children.forEach((child: Boid) => {
-      preys.push(new Prey(
-        child.id,
-        child.width,
-        child.height,
-        child.id_father,
-        child.id_mother,
-        child.x,
-        child.y,
-        child.size,
-        child.color,
-        child.velocity,
-        child.vision,
-        child.hunger_rate,
-        child.thirst_rate,
-        child.mating_rate
-      ));
+      preys.push(
+        new Prey(
+          child.id,
+          child.width,
+          child.height,
+          child.id_father,
+          child.id_mother,
+          child.x,
+          child.y,
+          child.size,
+          child.color,
+          child.velocity,
+          child.vision,
+          child.hunger_rate,
+          child.thirst_rate,
+          child.mating_rate
+        )
+      );
     });
     return preys;
   }

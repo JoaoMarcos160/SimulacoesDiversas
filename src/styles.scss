@@ -68,3 +68,20 @@
   border-right: 0.6em solid transparent;
   border-top: 0.6em solid black;
 }
+
+.container {
+  display: flex;
+}
+
+.fps {
+  text-rendering: optimizeSpeed;
+  font-size: large;
+  font-weight: bold;
+}
+
+#imgBackground {
+  position: absolute;
+  image-rendering: -webkit-optimize-contrast;
+  resize: horizontal;
+  z-index: -5;
+}

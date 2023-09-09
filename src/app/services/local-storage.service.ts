@@ -18,9 +18,9 @@ export class LocalStorageService {
     return false;
   }
 
-  get(key: string): any {
+  get<T = any>(key: string): T {
     if (this.storage) {
-      return JSON.parse(this.storage.getItem(key));
+      return JSON.parse(this.storage.getItem(key)) as T;
     }
     return null;
   }

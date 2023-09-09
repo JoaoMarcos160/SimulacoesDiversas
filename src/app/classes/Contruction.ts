@@ -1,5 +1,4 @@
 import { ConstructionTypeEnum } from '../enums/ContructionTypeEnum';
-import { getRandomInt } from '../funcoes/sorteios';
 
 export default class Construction {
   private _id: number;

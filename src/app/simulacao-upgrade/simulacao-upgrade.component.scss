@@ -6,13 +6,6 @@ button {
   margin: 5px;
 }
 
-.container {
-  display: flex;
-}
-
-.div-canvas {
-}
-
 .div-configs {
   width: fit-content;
   // position: fixed;
@@ -25,21 +18,8 @@ button {
   margin-right: 0.2em;
 }
 
-.fps {
-  text-rendering: optimizeSpeed;
-  font-size: large;
-  font-weight: bold;
-}
-
 .data {
   display: block;
   flex-direction: column;
   flex-wrap: wrap;
-}
-
-#imgBackground {
-  position: absolute;
-  image-rendering: -webkit-optimize-contrast;
-  resize: horizontal;
-  z-index: -5;
 }
