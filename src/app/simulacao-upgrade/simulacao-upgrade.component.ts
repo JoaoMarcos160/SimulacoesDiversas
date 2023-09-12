@@ -210,6 +210,7 @@ export class SimulacaoUpgradeComponent
   }
 
   private loadSavedSection() {
+    this.loadTotals();
     const arrayPreys = this.localStorageService.get<any[]>(
       KEYS_LOCAL_STORAGE.arrayPreys
     );
@@ -289,6 +290,10 @@ export class SimulacaoUpgradeComponent
     } else {
       this.createConstructions();
     }
+    this.loadLastSaveDate();
+  }
+
+  private loadTotals() {
     const totalBornPredators = this.localStorageService.get<number>(
       KEYS_LOCAL_STORAGE.totalBornPredators
     );
@@ -316,7 +321,6 @@ export class SimulacaoUpgradeComponent
     if (totalDeadPreys) {
       this.totalDeadPreys = totalDeadPreys;
     }
-    this.loadLastSaveDate();
   }
 
   private loadLastSaveDate() {
@@ -388,8 +392,9 @@ export class SimulacaoUpgradeComponent
   }
 
   public createPreys() {
+    this.totalBornPreys += this.initialNumberOfPreys;
+
     for (let i = 1; i <= this.initialNumberOfPreys; i++) {
-      this.totalBornPreys++;
       this.preys.push(
         new Prey(
           uid(UID_LENGTH),
@@ -401,20 +406,21 @@ export class SimulacaoUpgradeComponent
           this.screen.height / 2 + randn_bm() * 50,
           i == 1 ? 30 : getRandomInt(5, 30),
           i == 1 ? 'rgb(0,0,0)' : drawRGBColor(),
-          (Math.abs(randn_bm()) + getRandomInt(1, 5)) * 0.05,
+          (Math.abs(randn_bm()) + getRandomInt(1, 5)) * 0.1,
           (Math.abs(randn_bm()) + getRandomInt(2, 10)) * 50,
+          Math.abs(randn_bm()) + getRandomInt(2, 20),
+          Math.abs(randn_bm()) + getRandomInt(2, 20),
           Math.abs(randn_bm()) + getRandomInt(2, 10),
-          Math.abs(randn_bm()) + getRandomInt(2, 10),
-          Math.abs(randn_bm()) + getRandomInt(2, 10),
-          Math.abs(randn_bm()) + getRandomInt(2, 10)
+          Math.abs(randn_bm()) * getRandomInt(0, 8)
         )
       );
     }
   }
 
   public createPredators() {
+    this.totalBornPredators += this.initialNumberOfPredator;
+
     for (let i = 1; i <= this.initialNumberOfPredator; i++) {
-      this.totalBornPredators++;
       this.predators.push(
         new Predator(
           uid(UID_LENGTH),
@@ -426,12 +432,12 @@ export class SimulacaoUpgradeComponent
           getRandomInt(1, this.screen.height),
           getRandomInt(10, 15),
           'rgb(150,75,0)',
-          (Math.abs(randn_bm()) + getRandomInt(1, 5)) * 0.1,
+          (Math.abs(randn_bm()) + getRandomInt(1, 5)) * 0.15,
           (Math.abs(randn_bm()) + getRandomInt(2, 10)) * 50,
+          Math.abs(randn_bm()) + getRandomInt(2, 20),
+          Math.abs(randn_bm()) + getRandomInt(2, 20),
           Math.abs(randn_bm()) + getRandomInt(2, 10),
-          Math.abs(randn_bm()) + getRandomInt(2, 10),
-          Math.abs(randn_bm()) + getRandomInt(2, 10),
-          Math.abs(randn_bm()) + getRandomInt(2, 5),
+          Math.abs(randn_bm()) * getRandomInt(0, 3),
           (Math.abs(randn_bm()) + getRandomInt(2, 10)) * 3
         )
       );
@@ -998,6 +1004,10 @@ export class SimulacaoUpgradeComponent
       this.preys = [];
       this.predators = [];
       this.constructions = [];
+      this.totalBornPredators = 0;
+      this.totalBornPreys = 0;
+      this.totalDeadPredators = 0;
+      this.totalDeadPreys = 0;
       this.localStorageService.remove(KEYS_LOCAL_STORAGE.arrayPreys);
       this.localStorageService.remove(KEYS_LOCAL_STORAGE.arrayPredators);
       this.localStorageService.remove(KEYS_LOCAL_STORAGE.arrayConstructions);
@@ -1010,10 +1020,6 @@ export class SimulacaoUpgradeComponent
       this.createPreys();
       this.createPredators();
       this.createConstructions();
-      this.totalBornPredators = 0;
-      this.totalBornPreys = 0;
-      this.totalDeadPredators = 0;
-      this.totalDeadPreys = 0;
       this.saveSection();
       console.log('Reset section!');
     }
