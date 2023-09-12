@@ -106,6 +106,16 @@
       <br />
     </div>
     <div class="input-configs">
+      <input
+        id="chkAutoSave"
+        type="checkbox"
+        (change)="handleConfigs('autoSave', !config.autoSave)"
+        [checked]="config.autoSave"
+      />
+      <label>Auto Save</label>
+      <br />
+    </div>
+    <div class="input-configs">
       <label>Time per cycle: {{ config.velocity / 1000 }}s</label>
       <br />
     </div>
@@ -121,10 +131,34 @@
       />
       <br />
     </div>
+    <br />
     <div class="fps">
       {{ config.showFrameRate ? frameRate + " FPS" : "" }}
     </div>
-
+    <br />
+    <table aria-describedby="Statistics">
+      <th>--Statistics--</th>
+      <tr>
+        <td>Total Predators</td>
+        <td>{{ totalPredators }}</td>
+      </tr>
+      <tr>
+        <td>Total Preys</td>
+        <td>{{ totalPreys }}</td>
+      </tr>
+      <tr>
+        <td>Total Dead Preys</td>
+        <td>{{ totalDeadPreys }}</td>
+      </tr>
+    </table>
+    <br />
+    <div class="input-configs">
+      <button type="button" (click)="saveSection()">Save Section</button>
+      <button type="button" (click)="resetSection()">Reset Section</button>
+      <br />
+      Last save: {{ lastSave }}
+    </div>
+    <br />
     <div class="input-configs">
       <input
         id="txtIdBoid"
@@ -163,11 +197,16 @@
       />
       <label for="radioTypeConstruction">Construction</label>
       <br />
-      <button type="submit" (click)="toWatchBoid()">Watch</button>
-      <button type="submit" (click)="unwatchBoid()">Unwatch</button>
-    </div>
-    <div class="input-configs">
-      <button type="button" (click)="saveSection()">Save</button>
+      <button
+        *ngIf="!watch || watch.id != txtIdBoid"
+        type="submit"
+        (click)="toWatchBoid()"
+      >
+        Watch
+      </button>
+      <button *ngIf="watch" type="submit" (click)="unwatchBoid()">
+        Unwatch
+      </button>
     </div>
     <table *ngIf="watch">
       <caption>
@@ -190,21 +229,6 @@
         >
           {{ watch[obj.property] }}
         </td>
-      </tr>
-    </table>
-    <h4>Statistics</h4>
-    <table>
-      <tr>
-        <td>Total Predators</td>
-        <td>{{ totalPredators }}</td>
-      </tr>
-      <tr>
-        <td>Total Preys</td>
-        <td>{{ totalPreys }}</td>
-      </tr>
-      <tr>
-        <td>Total Dead Preys</td>
-        <td>{{ totalDeadPreys }}</td>
       </tr>
     </table>
   </div>

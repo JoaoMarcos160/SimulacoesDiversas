@@ -2,6 +2,7 @@ import {
   AfterViewInit,
   Component,
   ElementRef,
+  HostListener,
   OnDestroy,
   OnInit,
   ViewChild,
@@ -14,6 +15,7 @@ import Predator from '../classes/Predator';
 import Prey from '../classes/Prey';
 import Step from '../classes/Step';
 import { ConstructionTypeEnum } from '../enums/ContructionTypeEnum';
+import { addTransparencyToRGB } from '../funcoes/core';
 import {
   drawContructionSize,
   drawRGBColor,
@@ -28,20 +30,16 @@ const KEYS_DOWN = ['Down', 'ArrowDown', 'S', 's'];
 const KEYS_UP = ['Up', 'ArrowUp', 'W', 'w'];
 const KEYS_LEFT = ['Left', 'ArrowLeft', 'A', 'a'];
 const KEYS_RIGHT = ['Right', 'ArrowRight', 'D', 'd'];
-const KEYS_LOCAL_STORAGE: {
-  configs: string;
-  arrayPreys: string;
-  arrayPredators: string;
-  arrayConstructions: string;
-} = {
+const KEYS_LOCAL_STORAGE = {
   configs: '@simulacao:configs',
   arrayPreys: '@simulacao:arrayPreys',
   arrayPredators: '@simulacao:arrayPredators',
   arrayConstructions: '@simulacao:arrayConstructions',
-};
+  lastSectionSaveIn: '@simulacao:lastSectionSaveIn',
+} as const;
 const GRANULITY_RULER: number = 25;
 const GRANULITY_GRID: number = 25;
-const MIN_DISTANCE_BETWEEN_CONTRUCTION: number = 100;
+const MIN_DISTANCE_BETWEEN_CONTRUCTION: number = 30;
 const MIN_DISTANCE_BETWEEN_BOIDS: number = 2;
 const DISTANCE_TO_CONSUME_RESOURCES: number = 10;
 const UID_LENGTH: number = 4;
@@ -50,6 +48,20 @@ const PREY_HUNGRY_LEVEL_TO_SEARCH_TREE: number = 15;
 const PREY_THIRST_LEVEL_TO_SEARCH_LAKE: number = 25;
 const PREDATOR_HUNGRY_LEVEL_TO_SEARCH_PREY: number = 50;
 const PREDATOR_THIRST_LEVEL_TO_SEARCH_LAKE: number = 25;
+
+interface IConfig {
+  showFrameRate: boolean;
+  showId: boolean;
+  showRoutesPreys: boolean;
+  showRoutesPredators: boolean;
+  showRuler: boolean;
+  showGrid: boolean;
+  showVisionPreys: boolean;
+  showVisionPredators: boolean;
+  showResources: boolean;
+  velocity: number; //the smaller the faster
+  autoSave: boolean; //save on close
+}
 
 @Component({
   selector: 'app-simulacao-upgrade',
@@ -61,6 +73,13 @@ export class SimulacaoUpgradeComponent
 {
   @ViewChild('canvas')
   canvas: ElementRef<HTMLCanvasElement>;
+
+  @HostListener('window:beforeunload')
+  saveOnUnload() {
+    if (this.config.autoSave) {
+      this.saveSection();
+    }
+  }
 
   public txtIdBoid: string;
   public radioTypePrey: boolean;
@@ -84,7 +103,7 @@ export class SimulacaoUpgradeComponent
     Math.max(this.screen.height, this.screen.width) / 50
   );
   private initialNumberOfConstructions: number = Math.ceil(
-    Math.max(this.screen.height, this.screen.width) / 75
+    Math.max(this.screen.height, this.screen.width) / getRandomInt(30, 100)
   );
 
   private preys: Prey[] = [];
@@ -94,6 +113,7 @@ export class SimulacaoUpgradeComponent
   public watch: Boid | Construction = null;
   public objKeys: { property: string; label: string }[] = [];
   public totalDeadPreys: number = 0;
+  public lastSave: Date;
 
   public get totalPredators(): number {
     return this.predators.length;
@@ -102,18 +122,7 @@ export class SimulacaoUpgradeComponent
     return this.preys.length;
   }
 
-  public config: {
-    showFrameRate: boolean;
-    showId: boolean;
-    showRoutesPreys: boolean;
-    showRoutesPredators: boolean;
-    showRuler: boolean;
-    showGrid: boolean;
-    showVisionPreys: boolean;
-    showVisionPredators: boolean;
-    showResources: boolean;
-    velocity: number; //the smaller the faster
-  } = {
+  public config: IConfig = {
     showFrameRate: true,
     showId: true,
     showRoutesPreys: false,
@@ -124,6 +133,7 @@ export class SimulacaoUpgradeComponent
     showVisionPredators: false,
     showResources: true,
     velocity: 0,
+    autoSave: true,
   };
 
   public images: { [number: number]: any } = Object.keys(ConstructionTypeEnum)
@@ -141,7 +151,7 @@ export class SimulacaoUpgradeComponent
   ) {}
 
   ngOnInit(): void {
-    console.log(this.screen);
+    console.log('screen', this.screen);
     this.getNumberOfPredatorsAndPreys();
     this.loadConfigs();
     this.loadSavedSection();
@@ -214,6 +224,7 @@ export class SimulacaoUpgradeComponent
             element._hunger_rate,
             element._thirst_rate,
             element._mating_rate,
+            element._fertility,
             element._steps
           )
       );
@@ -242,6 +253,7 @@ export class SimulacaoUpgradeComponent
             element._hunger_rate,
             element._thirst_rate,
             element._mating_rate,
+            element._fertility,
             element._attack_range,
             element._preys_eaten,
             element._steps
@@ -270,6 +282,13 @@ export class SimulacaoUpgradeComponent
     } else {
       this.createConstructions();
     }
+    this.loadLastSaveDate();
+  }
+
+  private loadLastSaveDate() {
+    this.lastSave = this.localStorageService.get(
+      KEYS_LOCAL_STORAGE.lastSectionSaveIn
+    );
   }
 
   private loadConfigs() {
@@ -278,7 +297,7 @@ export class SimulacaoUpgradeComponent
       this.config = configs;
       return;
     }
-    this.localStorageService.set(KEYS_LOCAL_STORAGE.configs, this.config);
+    this.saveConfigs();
   }
 
   //control boid 1 (big black boid or if die, the first boid of array)
@@ -347,8 +366,9 @@ export class SimulacaoUpgradeComponent
           this.screen.height / 2 + randn_bm() * 50,
           i == 1 ? 30 : getRandomInt(5, 30),
           i == 1 ? 'rgb(0,0,0)' : drawRGBColor(),
-          0.5,
-          (Math.abs(randn_bm()) + 10) * 50,
+          (Math.abs(randn_bm()) + getRandomInt(1, 5)) * 0.1,
+          (Math.abs(randn_bm()) + getRandomInt(2, 10)) * 50,
+          Math.abs(randn_bm()) + getRandomInt(2, 10),
           Math.abs(randn_bm()) + getRandomInt(2, 10),
           Math.abs(randn_bm()) + getRandomInt(2, 10),
           Math.abs(randn_bm()) + getRandomInt(2, 10)
@@ -368,14 +388,15 @@ export class SimulacaoUpgradeComponent
           '',
           getRandomInt(1, this.screen.width),
           getRandomInt(1, this.screen.height),
-          15,
-          '#964b00',
-          0.4,
-          (Math.round(Math.abs(randn_bm())) + 10) * 50,
+          getRandomInt(10, 15),
+          'rgb(150,75,0)',
+          (Math.abs(randn_bm()) + getRandomInt(1, 5)) * 0.1,
+          (Math.abs(randn_bm()) + getRandomInt(2, 10)) * 50,
           Math.abs(randn_bm()) + getRandomInt(2, 10),
           Math.abs(randn_bm()) + getRandomInt(2, 10),
           Math.abs(randn_bm()) + getRandomInt(2, 10),
-          (Math.abs(randn_bm()) + 10) * 2
+          Math.abs(randn_bm()) + getRandomInt(2, 10),
+          (Math.abs(randn_bm()) + getRandomInt(2, 10)) * 3
         )
       );
     }
@@ -720,7 +741,7 @@ export class SimulacaoUpgradeComponent
   }
 
   private drawBorderRedBoid(boid: Boid) {
-    this.context.strokeStyle = 'rgb(255, 0, 0)';
+    this.context.strokeStyle = 'rgb(255,0,0)';
     this.context.strokeRect(boid.x, boid.y, boid.size, boid.size);
   }
 
@@ -775,8 +796,8 @@ export class SimulacaoUpgradeComponent
   }
 
   public drawVisionBoid(boid: Boid) {
-    this.context.fillStyle = `${boid.color}20`;
-    this.context.strokeStyle = `${boid.color}`;
+    this.context.fillStyle = addTransparencyToRGB(boid.color, 0.2);
+    this.context.strokeStyle = boid.color;
     this.context.beginPath();
     this.context.arc(boid.x, boid.y, boid.vision, 0, Math.PI * 2);
     this.context.fill();
@@ -883,9 +904,15 @@ export class SimulacaoUpgradeComponent
     }
   }
 
-  public handleConfigs(key: string, value: any) {
+  public handleConfigs<K extends keyof IConfig>(key: K, value: any) {
     this.config[key] = value;
     this.localStorageService.set(KEYS_LOCAL_STORAGE.configs, this.config);
+  }
+
+  public saveConfigs() {
+    console.log('Saving configs...');
+    this.localStorageService.set(KEYS_LOCAL_STORAGE.configs, this.config);
+    console.log('Saved configs!');
   }
 
   public saveSection() {
@@ -899,6 +926,33 @@ export class SimulacaoUpgradeComponent
       KEYS_LOCAL_STORAGE.arrayConstructions,
       this.constructions
     );
+    this.localStorageService.set(
+      KEYS_LOCAL_STORAGE.lastSectionSaveIn,
+      new Date()
+    );
+    this.loadLastSaveDate();
     console.log('Saved section!');
+  }
+
+  public resetSection() {
+    const confirmResetSection = window.confirm(
+      "Are you sure you want to reset the section? This action can't be undone"
+    );
+    if (confirmResetSection) {
+      console.log('Resetting section...');
+      this.preys = [];
+      this.predators = [];
+      this.constructions = [];
+      this.localStorageService.remove(KEYS_LOCAL_STORAGE.arrayPreys);
+      this.localStorageService.remove(KEYS_LOCAL_STORAGE.arrayPredators);
+      this.localStorageService.remove(KEYS_LOCAL_STORAGE.arrayConstructions);
+      this.localStorageService.remove(KEYS_LOCAL_STORAGE.lastSectionSaveIn);
+      this.loadLastSaveDate();
+      this.createPreys();
+      this.createPredators();
+      this.createConstructions();
+      this.saveSection();
+      console.log('Reset section!');
+    }
   }
 }

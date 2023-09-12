@@ -27,6 +27,7 @@ export default class Predator extends Boid {
     hunger_rate: number,
     thirst_rate: number,
     mating_rate: number,
+    fertility: number,
     attack_range: number,
     preys_eaten: number = 0,
     steps: Step[] = []
@@ -46,6 +47,7 @@ export default class Predator extends Boid {
       hunger_rate,
       thirst_rate,
       mating_rate,
+      fertility,
       steps
     );
     this._attack_range = attack_range;
@@ -77,6 +79,7 @@ export default class Predator extends Boid {
           child.hunger_rate,
           child.thirst_rate,
           child.mating_rate,
+          child.fertility,
           Boid.mergeValuesOfGene(this.attack_range, partner.attack_range)
         )
       );

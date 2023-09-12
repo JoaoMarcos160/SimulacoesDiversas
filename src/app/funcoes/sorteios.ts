@@ -153,9 +153,9 @@ export function drawHexColor(): string {
  * @returns Retorna uma string de cor no formato RGB, ou seja, rgba(255,255,255,0.5)
  */
 export function drawRGBAColor(): string {
-  return `rgba(${Math.trunc(Math.random() * 255)}, ${Math.trunc(
+  return `rgba(${Math.trunc(Math.random() * 255)},${Math.trunc(
     Math.random() * 255
-  )}, ${Math.trunc(Math.random() * 255)}, ${Math.random()})`;
+  )},${Math.trunc(Math.random() * 255)},${Math.random()})`;
 }
 
 /**
@@ -163,9 +163,9 @@ export function drawRGBAColor(): string {
  * @returns Retorna uma string de cor no formato RGB, ou seja, rgb(255,255,255)
  */
 export function drawRGBColor(): string {
-  return `rgb(${Math.trunc(Math.random() * 255)}, ${Math.trunc(
+  return `rgb(${Math.trunc(Math.random() * 255)},${Math.trunc(
     Math.random() * 255
-  )}, ${Math.trunc(Math.random() * 255)})`;
+  )},${Math.trunc(Math.random() * 255)})`;
 }
 
 /**
@@ -207,7 +207,7 @@ export function sortearTamanho(): number {
  * @returns Retorna um booleano com 50% de chance de ser true e 50% de ser false
  */
 export function sortearSexo(): boolean {
-  return Math.random() > 0.5 ? true : false;
+  return Math.random() > 0.5;
 }
 
 /**

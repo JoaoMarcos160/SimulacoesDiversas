@@ -1,7 +1,7 @@
 import { uid } from 'uid';
 import { ConstructionTypeEnum } from '../enums/ContructionTypeEnum';
 import { mixColorsRGB } from '../funcoes/core';
-import { getRandomInt, getRandomNumber, randn_bm } from '../funcoes/sorteios';
+import { getRandomInt, getRandomNumber } from '../funcoes/sorteios';
 import Construction from './Contruction';
 import Step from './Step';
 
@@ -26,6 +26,7 @@ export default class Boid {
   private _hunger_rate: number;
   private _thirst_rate: number;
   private _mating_rate: number;
+  private _fertility: number;
 
   public get id(): string {
     return this._id;
@@ -135,6 +136,10 @@ export default class Boid {
     return this._mating_rate;
   }
 
+  public get fertility(): number {
+    return this._fertility;
+  }
+
   constructor(
     id: string,
     width: number,
@@ -150,6 +155,7 @@ export default class Boid {
     hunger_rate: number,
     thirst_rate: number,
     mating_rate: number,
+    fertility: number,
     steps: Step[] = []
   ) {
     this._id = id;
@@ -169,6 +175,7 @@ export default class Boid {
     this._hunger_rate = hunger_rate;
     this._thirst_rate = thirst_rate;
     this._mating_rate = mating_rate;
+    this._fertility = fertility;
     this._steps = steps;
   }
 
@@ -328,9 +335,12 @@ export default class Boid {
   }
 
   public mate(partner: Boid): Boid[] {
-    const quantityChildres = Math.max(1, Math.round(Math.abs(randn_bm())));
+    const quantityChildren = getRandomInt(
+      Math.floor(Math.min(this.fertility, partner.fertility)),
+      Math.ceil(Math.max(this.fertility, partner.fertility))
+    );
     const children = [];
-    for (let i = 0; i < quantityChildres; i++) {
+    for (let i = 0; i < quantityChildren; i++) {
       const newBoid = new Boid(
         uid(this.id.length),
         Boid.mergeValuesOfGene(this.width, partner.width),
@@ -346,13 +356,14 @@ export default class Boid {
         Boid.mergeValuesOfGene(this.vision, partner.vision),
         Boid.mergeValuesOfGene(this.hunger_rate, partner.hunger_rate),
         Boid.mergeValuesOfGene(this.thirst_rate, partner.thirst_rate),
-        Boid.mergeValuesOfGene(this.mating_rate, partner.mating_rate)
+        Boid.mergeValuesOfGene(this.mating_rate, partner.mating_rate),
+        Boid.mergeValuesOfGene(this.fertility, partner.fertility)
       );
       children.push(newBoid);
     }
     this.mating = 0;
     partner.mating = 0;
-    this.increasesHunger(5);
+    this.increasesHunger(quantityChildren * 1.5);
     return children;
   }
 

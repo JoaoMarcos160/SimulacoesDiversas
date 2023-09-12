@@ -75,7 +75,8 @@ export default class Prey extends Boid {
           child.vision,
           child.hunger_rate,
           child.thirst_rate,
-          child.mating_rate
+          child.mating_rate,
+          child.fertility
         )
       );
     });

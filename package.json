@@ -1,6 +1,6 @@
 {
   "name": "simulacao-inicial",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -10,6 +10,9 @@
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e"
+  },
+  "engines": {
+    "node": "16.x"
   },
   "private": true,
   "dependencies": {

@@ -61,23 +61,23 @@ export function sleep(ms: number) {
  * @returns retorna a mistura das cores
  */
 export function mixColorsRGB(p: number, c0: string, c1: string) {
-  var P = 1 - p,
+  const P = 1 - p,
     [cor1, cor2, cor3, alpha1] = c0.split(','),
     [cor4, cor5, cor6, alpha2] = c1.split(','),
     x = alpha1 || alpha2,
     j = x
       ? ',' +
-      (!alpha1
-        ? alpha2
-        : !alpha2
+        (!alpha1
+          ? alpha2
+          : !alpha2
           ? alpha1
           : Math.abs(
-            Math.round(
-              (parseFloat(alpha1) * P + parseFloat(alpha2) * p) * 1000
-            )
-          ) /
-          1000 +
-          ')')
+              Math.round(
+                (parseFloat(alpha1) * P + parseFloat(alpha2) * p) * 1000
+              )
+            ) /
+              1000 +
+            ')')
       : ')';
   return (
     'rgb' +
@@ -87,7 +87,7 @@ export function mixColorsRGB(p: number, c0: string, c1: string) {
       Math.abs(
         Math.round(
           parseInt(cor1[3] == 'a' ? cor1.slice(5) : cor1.slice(4)) * P +
-          parseInt(cor4[3] == 'a' ? cor4.slice(5) : cor4.slice(4)) * p
+            parseInt(cor4[3] == 'a' ? cor4.slice(5) : cor4.slice(4)) * p
         )
       )
     ) +
@@ -103,4 +103,27 @@ export function mixColorsRGB(p: number, c0: string, c1: string) {
     ) +
     j
   );
+}
+
+const RGB_REGEX = /^rgb\((\d+),(\d+),(\d+)\)$/;
+
+/**
+ *
+ * @param rgbString string no formato rgb(255,255,255)
+ * @param alfa numero de alfa (transparencia) de 0 a 1
+ * @returns nova string no formato rgba(255,255,255,0.5)
+ */
+export function addTransparencyToRGB(
+  rgbString: string,
+  alfa: number = 0.5
+): string | null {
+  const match = RGB_REGEX.exec(rgbString);
+
+  if (!match) {
+    return null;
+  }
+
+  const [, r, g, b] = match;
+
+  return `rgba(${r},${g},${b},${alfa})`;
 }
