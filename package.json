@@ -6,7 +6,8 @@
     "start": "ng serve",
     "start-host": "ng serve --public-host --host",
     "build": "ng build",
-    "build-prod": "ng build --build-optimizer --configuration production --optimization",
+    "build:prod": "ng build --build-optimizer --configuration production --optimization",
+    "build:digitalocean": "yarn install --production --frozen-lockfile && yarn run build:prod",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e"
