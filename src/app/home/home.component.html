@@ -1,15 +1,23 @@
 <title>Home</title>
-<nav>
-  <ul>
-    <li>
-      <button (click)="navegarPara('SimulacaoInicial')">
-        Simulação inicial
-      </button>
-    </li>
-    <li>
-      <button (click)="navegarPara('SimulacaoUpgrade')">
-        Simulação upgrade
-      </button>
-    </li>
-  </ul>
-</nav>
+<div class="home-menu">
+  <h1>Simulações</h1>
+  <nav>
+    <ul>
+      <li>
+        <button (click)="navegarPara('SimulacaoInicial')">
+          Simulação inicial
+        </button>
+      </li>
+      <li>
+        <button (click)="navegarPara('SimulacaoUpgrade')">
+          Simulação upgrade
+        </button>
+      </li>
+      <li>
+        <button (click)="navegarPara('simulacao-ia')">
+          Simulação Inteligência Artificial
+        </button>
+      </li>
+    </ul>
+  </nav>
+</div>

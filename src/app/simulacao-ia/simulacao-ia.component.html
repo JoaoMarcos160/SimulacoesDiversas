@@ -1,0 +1,19 @@
+<div class="container">
+  <div id="div-canvas">
+    <img
+      id="imgBackground"
+      src="../../assets/grass.webp"
+      alt="Background"
+      [width]="screen.width"
+      [height]="screen.height"
+    />
+    <canvas id="canvasIa" #canvasIa [width]="screen.width" [height]="screen.height">
+    </canvas>
+  </div>
+  <div id="div-info">
+    <h3>Info</h3>
+    <div>Width: {{ screen.width }}</div>
+    <div>Height: {{ screen.height }}</div>
+  </div>
+  <div id="div-configs"></div>
+</div>

@@ -1,8 +1,9 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { SimulacaoNaoEncontradaComponent } from './simulacao-nao-encontrada/simulacao-nao-encontrada.component';
-import { SimulacaoInicialComponent } from './simulacao-inicial/simulacao-inicial.component';
 import { HomeComponent } from './home/home.component';
+import { SimulacaoIaComponent } from './simulacao-ia/simulacao-ia.component';
+import { SimulacaoInicialComponent } from './simulacao-inicial/simulacao-inicial.component';
+import { SimulacaoNaoEncontradaComponent } from './simulacao-nao-encontrada/simulacao-nao-encontrada.component';
 import { SimulacaoUpgradeComponent } from './simulacao-upgrade/simulacao-upgrade.component';
 
 const routes: Routes = [
@@ -12,6 +13,7 @@ const routes: Routes = [
     path: 'SimulacaoInicial/:numeroDeIndividuos',
     component: SimulacaoInicialComponent,
   },
+  { path: 'simulacao-ia/:population', component: SimulacaoIaComponent },
   { path: 'SimulacaoInicial', component: SimulacaoInicialComponent },
   { path: 'SimulacaoUpgrade', component: SimulacaoUpgradeComponent },
   { path: '**', component: SimulacaoNaoEncontradaComponent },

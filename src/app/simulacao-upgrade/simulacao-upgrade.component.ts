@@ -36,10 +36,14 @@ const KEYS_LOCAL_STORAGE = {
   arrayPredators: '@simulacao:arrayPredators',
   arrayConstructions: '@simulacao:arrayConstructions',
   lastSectionSaveIn: '@simulacao:lastSectionSaveIn',
+  totalDeadPredators: '@simulacao:totalDeadPredators',
+  totalDeadPreys: '@simulacao:totalDeadPreys',
+  totalBornPredators: '@simulacao:totalBornPredators',
+  totalBornPreys: '@simulacao:totalBornPreys',
 } as const;
 const GRANULITY_RULER: number = 25;
 const GRANULITY_GRID: number = 25;
-const MIN_DISTANCE_BETWEEN_CONTRUCTION: number = 30;
+const MIN_DISTANCE_BETWEEN_CONTRUCTION: number = 100;
 const MIN_DISTANCE_BETWEEN_BOIDS: number = 2;
 const DISTANCE_TO_CONSUME_RESOURCES: number = 10;
 const UID_LENGTH: number = 4;
@@ -113,6 +117,9 @@ export class SimulacaoUpgradeComponent
   public watch: Boid | Construction = null;
   public objKeys: { property: string; label: string }[] = [];
   public totalDeadPreys: number = 0;
+  public totalDeadPredators: number = 0;
+  public totalBornPreys: number = 0;
+  public totalBornPredators: number = 0;
   public lastSave: Date;
 
   public get totalPredators(): number {
@@ -282,6 +289,33 @@ export class SimulacaoUpgradeComponent
     } else {
       this.createConstructions();
     }
+    const totalBornPredators = this.localStorageService.get<number>(
+      KEYS_LOCAL_STORAGE.totalBornPredators
+    );
+    if (totalBornPredators) {
+      this.totalBornPredators = totalBornPredators;
+    }
+
+    const totalBornPreys = this.localStorageService.get<number>(
+      KEYS_LOCAL_STORAGE.totalBornPreys
+    );
+    if (totalBornPreys) {
+      this.totalBornPreys = totalBornPreys;
+    }
+
+    const totalDeadPredators = this.localStorageService.get<number>(
+      KEYS_LOCAL_STORAGE.totalDeadPredators
+    );
+    if (totalDeadPredators) {
+      this.totalDeadPredators = totalDeadPredators;
+    }
+
+    const totalDeadPreys = this.localStorageService.get<number>(
+      KEYS_LOCAL_STORAGE.totalDeadPreys
+    );
+    if (totalDeadPreys) {
+      this.totalDeadPreys = totalDeadPreys;
+    }
     this.loadLastSaveDate();
   }
 
@@ -355,6 +389,7 @@ export class SimulacaoUpgradeComponent
 
   public createPreys() {
     for (let i = 1; i <= this.initialNumberOfPreys; i++) {
+      this.totalBornPreys++;
       this.preys.push(
         new Prey(
           uid(UID_LENGTH),
@@ -366,7 +401,7 @@ export class SimulacaoUpgradeComponent
           this.screen.height / 2 + randn_bm() * 50,
           i == 1 ? 30 : getRandomInt(5, 30),
           i == 1 ? 'rgb(0,0,0)' : drawRGBColor(),
-          (Math.abs(randn_bm()) + getRandomInt(1, 5)) * 0.1,
+          (Math.abs(randn_bm()) + getRandomInt(1, 5)) * 0.05,
           (Math.abs(randn_bm()) + getRandomInt(2, 10)) * 50,
           Math.abs(randn_bm()) + getRandomInt(2, 10),
           Math.abs(randn_bm()) + getRandomInt(2, 10),
@@ -379,6 +414,7 @@ export class SimulacaoUpgradeComponent
 
   public createPredators() {
     for (let i = 1; i <= this.initialNumberOfPredator; i++) {
+      this.totalBornPredators++;
       this.predators.push(
         new Predator(
           uid(UID_LENGTH),
@@ -395,7 +431,7 @@ export class SimulacaoUpgradeComponent
           Math.abs(randn_bm()) + getRandomInt(2, 10),
           Math.abs(randn_bm()) + getRandomInt(2, 10),
           Math.abs(randn_bm()) + getRandomInt(2, 10),
-          Math.abs(randn_bm()) + getRandomInt(2, 10),
+          Math.abs(randn_bm()) + getRandomInt(2, 5),
           (Math.abs(randn_bm()) + getRandomInt(2, 10)) * 3
         )
       );
@@ -542,6 +578,7 @@ export class SimulacaoUpgradeComponent
               prey.distanceOf(nearbyPreys[1]) < DISTANCE_TO_CONSUME_RESOURCES
             ) {
               const children = prey.mate(nearbyPreys[1]);
+              this.totalBornPreys += children.length;
               this.preys.push(...children);
             } else {
               prey.tracePathToCoordinate(nearbyPreys[1]);
@@ -597,6 +634,7 @@ export class SimulacaoUpgradeComponent
     this.context.setLineDash([0, 0]);
     for (const predator of this.predators) {
       if (predator.thirst >= 100 || predator.hungry >= 100) {
+        this.totalDeadPredators++;
         this.dieBoid(predator, 'predator');
         continue;
       }
@@ -614,6 +652,7 @@ export class SimulacaoUpgradeComponent
               DISTANCE_TO_CONSUME_RESOURCES
             ) {
               const children = predator.mate(nearbyPredators[1]);
+              this.totalBornPredators += children.length;
               this.predators.push(...children);
             } else {
               predator.tracePathToCoordinate(nearbyPredators[1]);
@@ -648,7 +687,6 @@ export class SimulacaoUpgradeComponent
             const preyNearby = preys[0];
             if (predator.distanceOf(preyNearby) < predator.attack_range) {
               predator.eatPrey(preyNearby.size);
-              this.totalDeadPreys++;
               this.dieBoid(preyNearby, 'prey');
             }
             predator.tracePathToCoordinate(preyNearby, 50);
@@ -857,18 +895,19 @@ export class SimulacaoUpgradeComponent
   }
 
   private dieBoid(boid: Boid, type: 'predator' | 'prey') {
-    if (type === 'predator') {
+    if (type === 'prey') {
+      const index = this.preys.findIndex((prey) => prey.id === boid.id);
+      if (index > -1) {
+        this.totalDeadPreys++;
+        this.preys.splice(index, 1);
+      }
+    } else if (type === 'predator') {
       const index = this.predators.findIndex(
         (predator) => predator.id === boid.id
       );
       if (index > -1) {
+        this.totalDeadPredators++;
         this.predators.splice(index, 1);
-      }
-    }
-    if (type === 'prey') {
-      const index = this.preys.findIndex((prey) => prey.id === boid.id);
-      if (index > -1) {
-        this.preys.splice(index, 1);
       }
     }
   }
@@ -930,6 +969,22 @@ export class SimulacaoUpgradeComponent
       KEYS_LOCAL_STORAGE.lastSectionSaveIn,
       new Date()
     );
+    this.localStorageService.set(
+      KEYS_LOCAL_STORAGE.totalBornPredators,
+      this.totalBornPredators
+    );
+    this.localStorageService.set(
+      KEYS_LOCAL_STORAGE.totalBornPreys,
+      this.totalBornPreys
+    );
+    this.localStorageService.set(
+      KEYS_LOCAL_STORAGE.totalDeadPredators,
+      this.totalDeadPredators
+    );
+    this.localStorageService.set(
+      KEYS_LOCAL_STORAGE.totalDeadPreys,
+      this.totalDeadPreys
+    );
     this.loadLastSaveDate();
     console.log('Saved section!');
   }
@@ -947,10 +1002,18 @@ export class SimulacaoUpgradeComponent
       this.localStorageService.remove(KEYS_LOCAL_STORAGE.arrayPredators);
       this.localStorageService.remove(KEYS_LOCAL_STORAGE.arrayConstructions);
       this.localStorageService.remove(KEYS_LOCAL_STORAGE.lastSectionSaveIn);
+      this.localStorageService.remove(KEYS_LOCAL_STORAGE.totalBornPredators);
+      this.localStorageService.remove(KEYS_LOCAL_STORAGE.totalBornPreys);
+      this.localStorageService.remove(KEYS_LOCAL_STORAGE.totalDeadPredators);
+      this.localStorageService.remove(KEYS_LOCAL_STORAGE.totalDeadPreys);
       this.loadLastSaveDate();
       this.createPreys();
       this.createPredators();
       this.createConstructions();
+      this.totalBornPredators = 0;
+      this.totalBornPreys = 0;
+      this.totalDeadPredators = 0;
+      this.totalDeadPreys = 0;
       this.saveSection();
       console.log('Reset section!');
     }

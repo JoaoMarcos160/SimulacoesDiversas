@@ -1,3 +1,12 @@
 li {
   margin: 1em;
 }
+
+.home-menu {
+  height: 99.6vh;
+  border: red solid 1px;
+  display: flex;
+  justify-content: center;
+  align-content: center;
+  flex-wrap: wrap;
+}

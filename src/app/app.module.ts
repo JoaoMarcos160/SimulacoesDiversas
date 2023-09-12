@@ -15,6 +15,7 @@ import { SliderComponent } from './componentes/slider/slider.component';
 import { HomeComponent } from './home/home.component';
 import { SimulacaoUpgradeComponent } from './simulacao-upgrade/simulacao-upgrade.component';
 import { FormsModule } from '@angular/forms';
+import { SimulacaoIaComponent } from './simulacao-ia/simulacao-ia.component';
 
 @NgModule({
   declarations: [
@@ -30,6 +31,7 @@ import { FormsModule } from '@angular/forms';
     SliderComponent,
     HomeComponent,
     SimulacaoUpgradeComponent,
+    SimulacaoIaComponent,
   ],
   imports: [BrowserModule, AppRoutingModule, FormsModule],
   providers: [],

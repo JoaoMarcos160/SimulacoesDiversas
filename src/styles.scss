@@ -1,8 +1,10 @@
 /* You can add global styles to this file, and also import other style files */
 
-.ocupar-tudo {
-  width: max-content;
-  height: max-content;
+.full-content {
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
 }
 
 /**
@@ -71,6 +73,7 @@
 
 .container {
   display: flex;
+  padding: 0.5rem;
 }
 
 .fps {
